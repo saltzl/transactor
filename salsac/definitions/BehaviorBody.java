@@ -567,6 +567,8 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 		code += SalsaCompiler.getIndent() + "\t\t\tcurrentMessage.resolveContinuations(returnValue);\n";
 		code += SalsaCompiler.getIndent() + "\t\t\treturn;\n";
 		code += SalsaCompiler.getIndent() + "\t\t}\n";
+        code += SalsaCompiler.getIndent() + "\t\tSystem.err.println(\"Uncaught exception in \" + toString() + \" , starting rollback.\")\n";
+        code += SalsaCompiler.getIndent() + "\t\tthis.rollback(); // no method with an unhandled exception was executed\n";
 		code += SalsaCompiler.getIndent() + "\t}\n\n";
 
 

@@ -50,7 +50,7 @@ public class CompilationUnit extends SimpleNode {
 			code += "import salsa.language.exceptions.CurrentContinuationException;\n";
 
 			String actorType = System.getProperty("actor");
-			if (actorType == null) actorType = "salsa.language.UniversalActor";
+			if (actorType == null) actorType = "transactor.language.*;";
 
 			code += "\n";
 			code += "import " + actorType + ";\n\n";

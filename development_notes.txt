@@ -11,4 +11,11 @@ Use naming service to track USL, UAL, UAN, Worldview, currentVersion
 We need to track worldview to track cascading rollback histories and checkpoint history updates (storage states do not reflect checkpointed history) 
 Update NS for WV on each rollback and checkpoint
 Update currentVersion on stabilize and rollback
-    
+   
+
+
+Mutability
+----------------------------------------
+Javari, IGJ to control access in transactors
+	--requires adding support for generics?
+ 

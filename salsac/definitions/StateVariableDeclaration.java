@@ -25,6 +25,7 @@ public class StateVariableDeclaration extends SimpleNode {
 
 		for (int i = 3; i < children.length; i++) {
 			code += ", " + getChild(i).getJavaCode();
+			SalsaCompiler.symbolTable.addSymbol( ((VariableDeclaration)getChild(i)).getName(), getChild(1).getJavaCode() ); // int a,b,c ; (now adds b,c to symbol table)
 		}
 		return code + ";\n";
 	}
