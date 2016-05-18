@@ -1,7 +1,7 @@
 /*
 	Code generation for the following grammar segment:
 
-	Variable := ["(" Type ")"] (Literal | Name | "this" | "super" | AllocationExpression | "(" Expression ")")
+	Variable := ["(" Type ")"] (Literal | Name | "this" | "super" | "dependent" | AllocationExpression | "(" Expression ")")
 */
 
 
@@ -17,6 +17,7 @@ public class Variable extends SimpleNode {
 	public String getType() {
 		if (children == null) {
 			if (getToken(0).image.equals("this")) return SalsaCompiler.getActorName();
+			else if (getToken(0).image.equals("dependent")) return "boolean";
 			else return SalsaCompiler.getExtendsName();
 		} else {
 			if (getChild(0) instanceof Type) return getChild(0).getJavaCode();
@@ -52,6 +53,7 @@ public class Variable extends SimpleNode {
                           return code;
                         }
 		} else {
+			if (getToken(0).image.equals("dependent")) return "this.isDependent()";
 			code = getToken(0).image;
 		}
 

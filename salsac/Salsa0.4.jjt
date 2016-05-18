@@ -134,10 +134,12 @@ TOKEN : {
 	| < CASE: "case" >
 	| < CATCH: "catch" >
 	| < CHAR: "char" >
+	| < CHECKPOINT: "checkpoint" >
 	| < CONST: "const" >
 	| < CONTINUE: "continue" >
 	| < CURRENTCONTINUATION: "currentContinuation" >
 	| < _DEFAULT: "default" >
+	| < DEPENDENT: "dependent" >
 	| < DO: "do" >
 	| < DOUBLE: "double" >
 	| < ELSE: "else" >
@@ -165,7 +167,9 @@ TOKEN : {
 	| < PROTECTED: "protected" >
 	| < PUBLIC: "public" >
 	| < RETURN: "return" >
+	| < ROLLBACK: "rollback" >
 	| < SHORT: "short" >
+	| < STABILIZE: "stabilize" >
 	| < SUPER: "super" >
 	| < SWITCH: "switch" >
 	| < THIS: "this" >
@@ -507,6 +511,7 @@ void UnaryExpressionNotPlusMinus() : {} {
 	  ("~" | "!") UnaryExpression()
 	| LOOKAHEAD( CastExpression() ) CastExpression()
 	| PostfixExpression()
+
 }
 
 void PostfixExpression() : {} {
@@ -530,6 +535,7 @@ void PrimaryPrefix() : {} {
 	  Literal()
 	| "this"
 	| "super"
+	| "dependent"
 	| "(" Expression() ")"
 	| AllocationExpression()
 	| LOOKAHEAD( Name() ) Name()
@@ -647,6 +653,9 @@ void Statement() : {} {
 	| LOOKAHEAD( "return" )				ReturnStatement()
 	| LOOKAHEAD( "throw" )				ThrowStatement()
 	| LOOKAHEAD( "try" )				TryStatement()
+	| LOOKAHEAD( "checkpoint" )				CheckpointStatement()
+	| LOOKAHEAD( "stabilize" )				StabilizeStatement()
+	| LOOKAHEAD( "rollback" )				RollbackStatement()
 	| LOOKAHEAD( ["final"] Type() <IDENTIFIER> )	LocalVariableDeclaration() ( ";" | "@" )
  	| StatementExpression() ( ";" | "@" )
 }
@@ -722,4 +731,16 @@ void ThrowStatement() : {} {
 	
 void TryStatement() : {} {
 	"try" Block() ("catch" "(" ["final"] Type() <IDENTIFIER> ")" Block())*  ["finally" Block()]
+}
+
+void CheckpointStatement() : {} {
+	"checkpoint;"
+}
+
+void StabilizeStatement() : {} {
+	"stabilize;"
+}
+
+void RollbackStatement() : {} {
+	"rollback;"
 }
