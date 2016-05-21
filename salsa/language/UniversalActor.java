@@ -94,7 +94,7 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 		else return uan.getIdentifier();
 	}
 
-        public String getID() {
+	public String getID() {
 		if (uan != null) {
 			return uan.toString();
 		} else if (ual != null) {
@@ -111,7 +111,7 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 	 */
 	public UniversalActor construct() { return this; }
 
-        public void createRemotely(UAN uan, UAL targetUAL, String actorName) {
+	public void createRemotely(UAN uan, UAL targetUAL, String actorName) {
 		RunTime.receivedUniversalActor();
 		this.uan = uan;
 		ual = namingService.generateUAL();
@@ -123,39 +123,39 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 		   * the placeholder, and send the messages to the remote
 		   * actor
 		   */
-		namingService.setEntry(uan, ual, new Placeholder(uan, ual));
-		namingService.update(uan, ual);
+		 namingService.setEntry(uan, ual, new Placeholder(uan, ual));
+		 namingService.update(uan, ual);
 
-		UniversalActor remoteSystem = (UniversalActor)UniversalActor.getReferenceByLocation( targetUAL.getLocation() + "salsa/System" );
-		SystemService localSystem = ServiceFactory.getSystem();
-		UniversalActor self = null;
+		 UniversalActor remoteSystem = (UniversalActor)UniversalActor.getReferenceByLocation( targetUAL.getLocation() + "salsa/System" );
+		 SystemService localSystem = ServiceFactory.getSystem();
+		 UniversalActor self = null;
 
-		if (uan != null) {
-			self = (UniversalActor)UniversalActor.getReferenceByName(uan);
-			self.setUAL(ual);
-		} else {
-			System.err.println("Remote Actor Creation error:");
-			System.err.println("\tImproper creation request for actor: " + toString());
-			System.err.println("\tException: Cannot create an actor remotely if it does not have a UAN.");
-			return;
-		}
+		 if (uan != null) {
+		 	self = (UniversalActor)UniversalActor.getReferenceByName(uan);
+		 	self.setUAL(ual);
+		 } else {
+		 	System.err.println("Remote Actor Creation error:");
+		 	System.err.println("\tImproper creation request for actor: " + toString());
+		 	System.err.println("\tException: Cannot create an actor remotely if it does not have a UAN.");
+		 	return;
+		 }
 		//remoteTheater<-createActor(uan, ual, actorName) @
 		//localTheater<-removePlaceholder(uan, ual);
-		Token token1 = new Token();
-		Object[] createActorArgs = { uan, targetUAL, actorName};
-		Message createActorMsg = new Message(self, remoteSystem, "createActor", createActorArgs, null, token1,false);
+		 Token token1 = new Token();
+		 Object[] createActorArgs = { uan, targetUAL, actorName};
+		 Message createActorMsg = new Message(self, remoteSystem, "createActor", createActorArgs, null, token1,false);
 
-		Object[] removePlaceholderArgs = { uan, ual };
-		Message removePlaceholderMsg = new Message(self, localSystem, "removePlaceholder", removePlaceholderArgs, token1, null,false);
+		 Object[] removePlaceholderArgs = { uan, ual };
+		 Message removePlaceholderMsg = new Message(self, localSystem, "removePlaceholder", removePlaceholderArgs, token1, null,false);
 
-		remoteSystem.send(createActorMsg);
-		localSystem.send(removePlaceholderMsg);
-	}
+		 remoteSystem.send(createActorMsg);
+		 localSystem.send(removePlaceholderMsg);
+		}
 
-	public void createRemotely(UAN uan, UAL targetUAL, String actorName, ActorReference sourceRef) {
-		RunTime.receivedUniversalActor();
-		this.uan = uan;
-		ual = namingService.generateUAL();
+		public void createRemotely(UAN uan, UAL targetUAL, String actorName, ActorReference sourceRef) {
+			RunTime.receivedUniversalActor();
+			this.uan = uan;
+			ual = namingService.generateUAL();
 		/**
 		 * First we create a placeholder at the current theater, and
 		 * the actor at the remote theater.  After the actor at the
@@ -203,7 +203,7 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 	}
 	public UniversalActor(UAL ual)	{ this.ual = ual; }
 
-        public UniversalActor(boolean o,UAL ual)	{ this.ual = ual; }
+	public UniversalActor(boolean o,UAL ual)	{ this.ual = ual; }
 
 	public UniversalActor(boolean o,UAN uan)        {this(uan);}
 
@@ -264,7 +264,7 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 		if (ual != null) name += ual.toString();
 		else name += "null";
 		//return this.sourceActorReference+" -> "+name;
-                return name+"> ";
+		return name+"> ";
 	}
 
 	public boolean equals(Object o) {
@@ -293,9 +293,9 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 		try {
 			out.writeObject(uan);
 			out.writeObject(ual);
-                        out.writeBoolean(silent);
-                        out.writeBoolean(temporarySilent);
-                        out.writeObject(sourceActorReference);
+			out.writeBoolean(silent);
+			out.writeBoolean(temporarySilent);
+			out.writeObject(sourceActorReference);
 			out.flush();
 		} catch (IOException e) {
 			System.err.println("Error during actor reference serialization: ");
@@ -308,9 +308,9 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 		try {
 			uan = (UAN)in.readObject();
 			ual = (UAL)in.readObject();
-                        silent = in.readBoolean();
-                        temporarySilent=in.readBoolean();
-                        sourceActorReference=(WeakReference) in.readObject();
+			silent = in.readBoolean();
+			temporarySilent=in.readBoolean();
+			sourceActorReference=(WeakReference) in.readObject();
 		} catch (Exception e) {
 			System.err.println("Error during actor reference deserialization: ");
 			System.err.println("\tBy actor reference: " + toString());
@@ -334,133 +334,133 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 		*       while an actor reference becomes garbage
 		*    4. setRefGCState(boolean,boolean): low level transition
 		*       function
-	*********/
+		*********/
 
-        private WeakReference sourceActorReference = null;
-        private boolean silent = true;
-        private boolean temporarySilent = false;
+		private WeakReference sourceActorReference = null;
+		private boolean silent = true;
+		private boolean temporarySilent = false;
 
-        public boolean isSilent()		{ return silent; }
-        public boolean isTemporarySilent()	{ return temporarySilent; }
-        public boolean isWeakRef()		{ return silent && !temporarySilent; }
-        public boolean isInMessageState()	{ return silent && temporarySilent; }
-        public boolean isInActiveGCState()	{ return !temporarySilent && !silent; }
+		public boolean isSilent()		{ return silent; }
+		public boolean isTemporarySilent()	{ return temporarySilent; }
+		public boolean isWeakRef()		{ return silent && !temporarySilent; }
+		public boolean isInMessageState()	{ return silent && temporarySilent; }
+		public boolean isInActiveGCState()	{ return !temporarySilent && !silent; }
 
-	public void muteGC() {
-		silent = true;
-		temporarySilent = false;
-	}
-
-	public void activateGC() {
-		silent = false;
-		temporarySilent = false;
-	}
-
-	public void toInMessageState() {
-		if (!silent && !temporarySilent) {
+		public void muteGC() {
 			silent = true;
-			this.temporarySilent = true;
+			temporarySilent = false;
 		}
-	}
 
-	public void toActivateGCState() {
-		if (temporarySilent && silent) {
+		public void activateGC() {
+			silent = false;
+			temporarySilent = false;
+		}
+
+		public void toInMessageState() {
+			if (!silent && !temporarySilent) {
+				silent = true;
+				this.temporarySilent = true;
+			}
+		}
+
+		public void toActivateGCState() {
+			if (temporarySilent && silent) {
+				temporarySilent=false;
+				silent=false;
+			}
+		}
+
+		public void toStopGCSinkState() {
 			temporarySilent=false;
-			silent=false;
+			silent=true;
 		}
-	}
 
-	public void toStopGCSinkState() {
-		temporarySilent=false;
-		silent=true;
-	}
+		public void setRefGCState(boolean _silent,boolean _temporarySilent) {
+			silent = _silent;
+			temporarySilent = _temporarySilent;
+		}
 
-        public void setRefGCState(boolean _silent,boolean _temporarySilent) {
-		silent = _silent;
-		temporarySilent = _temporarySilent;
-        }
+		public void setSource(ActorReference ref) {
+			if (ref == null) sourceActorReference = null;
+			else sourceActorReference = new WeakReference(ref);
+		}
 
-        public void setSource(ActorReference ref) {
-		if (ref == null) sourceActorReference = null;
-		else sourceActorReference = new WeakReference(ref);
-        }
+		public void setSource(UAN __uan, UAL __ual) {
+			sourceActorReference = new WeakReference(__uan,__ual);
+		}
 
-        public void setSource(UAN __uan, UAL __ual) {
-		sourceActorReference = new WeakReference(__uan,__ual);
-        }
+		public ActorReference getSource() {
+			return this.sourceActorReference;
+		}
 
-        public ActorReference getSource() {
-		return this.sourceActorReference;
-        }
-
-        protected void finalize() {
-		if (!silent && this.sourceActorReference != null) {
+		protected void finalize() {
+			if (!silent && this.sourceActorReference != null) {
 			//notify the target and the source actors
 			//skip the case that self==sourceActorReference
 
-			if (sourceActorReference.getUAN() != null && uan != null && sourceActorReference.getUAN().equals(uan)) {
-				return;
-			} else if (sourceActorReference.getUAL()!=null && ual!=null && sourceActorReference.getUAL().equals(ual)) {
-				return;
-			}
+				if (sourceActorReference.getUAN() != null && uan != null && sourceActorReference.getUAN().equals(uan)) {
+					return;
+				} else if (sourceActorReference.getUAL()!=null && ual!=null && sourceActorReference.getUAL().equals(ual)) {
+					return;
+				}
 
 			//update forward reference information
-			WeakReference myself = new WeakReference(this);
-			sourceActorReference.send(new RemoveForwardRefMsg(sourceActorReference, myself));
+				WeakReference myself = new WeakReference(this);
+				sourceActorReference.send(new RemoveForwardRefMsg(sourceActorReference, myself));
+			}
 		}
-	}
 
-/**Begin UniversalActor.State**/
+		/**Begin UniversalActor.State**/
 
-public abstract class State extends Thread implements Actor, java.io.Serializable {
+		public abstract class State extends Thread implements Actor, java.io.Serializable {
   /*****
    * GC support:
    *  stateMemory: the soft memory that simulates the actor memory.
    *
    */
-        private ActorMemory stateMemory;
-        public ActorMemory getActorMemory() {return stateMemory;}
-    public void setActorMemory(ActorMemory new_stateMemory) { this.stateMemory = new_stateMemory; }
+  private ActorMemory stateMemory;
+  public ActorMemory getActorMemory() {return stateMemory;}
+  public void setActorMemory(ActorMemory new_stateMemory) { this.stateMemory = new_stateMemory; }
 
-	private UAN uan;
-	private UAL ual;
-	public	UAN getUAN()		{ return uan; }
-	public	UAL getUAL()		{ return ual; }
-	public void setUAL(UAL ual)	{ this.ual = ual; }
-        public UAN generateUAN(String nameServer) {
-		return ServiceFactory.getNaming().generateUAN(nameServer);
-        }
+  private UAN uan;
+  private UAL ual;
+  public	UAN getUAN()		{ return uan; }
+  public	UAL getUAL()		{ return ual; }
+  public void setUAL(UAL ual)	{ this.ual = ual; }
+  public UAN generateUAN(String nameServer) {
+  	return ServiceFactory.getNaming().generateUAN(nameServer);
+  }
 
-	public String getIdentifier() {
-		if (uan == null) return ual.getIdentifier();
-		else return uan.getIdentifier();
-	}
+  public String getIdentifier() {
+  	if (uan == null) return ual.getIdentifier();
+  	else return uan.getIdentifier();
+  }
 
-        public String getRefStr() {
-		if (uan != null) return uan.toString();
-		else return ual.toString();
-        }
+  public String getRefStr() {
+  	if (uan != null) return uan.toString();
+  	else return ual.toString();
+  }
 
-	private transient NamingService namingService;
-	private transient TheaterService theaterService;
-	public	transient ActorReference standardOutput;
-	public	transient ActorReference standardError;
-        public	transient ActorReference standardInput;
+  private transient NamingService namingService;
+  private transient TheaterService theaterService;
+  public	transient ActorReference standardOutput;
+  public	transient ActorReference standardError;
+  public	transient ActorReference standardInput;
 
-	public Vector __messages = new Vector();
-	public Message currentMessage = null;
+  public Vector __messages = new Vector();
+  public Message currentMessage = null;
 
-        public transient Vector joinTokenList = null;
+  public transient Vector joinTokenList = null;
 
-	String[] classNames = new String[0];
-	public transient Hashtable methods = new Hashtable();
+  String[] classNames = new String[0];
+  public transient Hashtable methods = new Hashtable();
 
 
-	public State(UAN uan, UAL ual) {
-                namingService = ServiceFactory.getNaming();
-		theaterService = ServiceFactory.getTheater();
+  public State(UAN uan, UAL ual) {
+  	namingService = ServiceFactory.getNaming();
+  	theaterService = ServiceFactory.getTheater();
 
-		this.uan = uan;
+  	this.uan = uan;
 		/**
 		 * If no ual is specified, we need to generate one.
 		 * if the specified ual is for the current theater,
@@ -475,18 +475,18 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 		}
 		this.ual = ual;
 		if (this.ual == null) this.ual = namingService.generateUAL();
-                if (this.uan!=null) {
-                  stateMemory = new ActorMemory(this.uan.toString());
-                  stateMemory.setPendingMessages(pendingMessages);
-                } else {
-                  stateMemory = new ActorMemory(this.ual.toString());
-                  stateMemory.setPendingMessages(pendingMessages);
-                }
+		if (this.uan!=null) {
+			stateMemory = new ActorMemory(this.uan.toString());
+			stateMemory.setPendingMessages(pendingMessages);
+		} else {
+			stateMemory = new ActorMemory(this.ual.toString());
+			stateMemory.setPendingMessages(pendingMessages);
+		}
 		addClassName("salsa.language.UniversalActor$State");
 		setName(getClass().getName());
-                if (!(this instanceof salsa.resources.EnvironmentalServiceState)) {
-                  RunTime.createdUniversalActor();
-                }
+		if (!(this instanceof salsa.resources.EnvironmentalServiceState)) {
+			RunTime.createdUniversalActor();
+		}
 
 	}
 
@@ -580,7 +580,7 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 	 * their target message.
 	 */
 	public Vector mailbox = new Vector();
-        public Vector sysMailbox=new Vector();
+	public Vector sysMailbox=new Vector();
 	public Hashtable pendingMessages = new Hashtable();
 	public Vector unresolvedTokens = new Vector();
 	/**
@@ -592,17 +592,17 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 		protected String	messageId;
 		protected int		position;
 		protected Object	value;
-                protected String        fromRef;
-                protected boolean       isJoin;
-                protected Object[]      refs;
+		protected String        fromRef;
+		protected boolean       isJoin;
+		protected Object[]      refs;
 
 		public UnresolvedTokenWrapper(String messageId, int position, Object value, String fromRef, boolean isJoin, Object[] refs) {
 			this.messageId = messageId;
 			this.position = position;
 			this.value = value;
-                        this.fromRef=fromRef;
-                        this.isJoin=isJoin;
-                        this.refs=refs;
+			this.fromRef=fromRef;
+			this.isJoin=isJoin;
+			this.refs=refs;
 		}
 	}
 
@@ -614,44 +614,44 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 	 * UnresolvedTokenWrapper and put in a Vector of unresolved tokens.
 	 */
 	public synchronized void resolveJoinToken(String messageId, int position, Object value, String fromRef) {
-          Message targetMessage = (Message)pendingMessages.get(messageId);
+		Message targetMessage = (Message)pendingMessages.get(messageId);
 
-          if (targetMessage != null) {
-              if (currentMessage.refSummary!=null) {
-                if (targetMessage.refSummary==null) {targetMessage.refSummary=new Vector();}
-                targetMessage.refSummary.addAll(currentMessage.refSummary);
-              }
-              targetMessage.resolveJoinToken(value, position, fromRef);
-            if (targetMessage.getContinuationToken().isResolved() == true) {
-                pendingMessages.remove(messageId);
-                RunTime.finishedProcessingMessage();
-            }
+		if (targetMessage != null) {
+			if (currentMessage.refSummary!=null) {
+				if (targetMessage.refSummary==null) {targetMessage.refSummary=new Vector();}
+				targetMessage.refSummary.addAll(currentMessage.refSummary);
+			}
+			targetMessage.resolveJoinToken(value, position, fromRef);
+			if (targetMessage.getContinuationToken().isResolved() == true) {
+				pendingMessages.remove(messageId);
+				RunTime.finishedProcessingMessage();
+			}
 
-          } else {
-                  unresolvedTokens.add( new UnresolvedTokenWrapper(messageId, position, value, fromRef,true,currentMessage.refSummary.toArray()));
-          }
-        }
+		} else {
+			unresolvedTokens.add( new UnresolvedTokenWrapper(messageId, position, value, fromRef,true,currentMessage.refSummary.toArray()));
+		}
+	}
 
-        public synchronized void resolveJoinToken(String messageId, int position, Object value, String fromRef, Object[] refs) {
-          Message targetMessage = (Message)pendingMessages.get(messageId);
+	public synchronized void resolveJoinToken(String messageId, int position, Object value, String fromRef, Object[] refs) {
+		Message targetMessage = (Message)pendingMessages.get(messageId);
 
-          if (targetMessage != null) {
-              if (refs!=null) {
-                if (targetMessage.refSummary==null) {targetMessage.refSummary=new Vector();}
-                for (int i = 0; i < refs.length; i++) {
-                  targetMessage.refSummary.addElement(refs[i]);
-                }
-              }
-              targetMessage.resolveJoinToken(value, position, fromRef);
-            if (targetMessage.getContinuationToken().isResolved() == true) {
-                pendingMessages.remove(messageId);
-                RunTime.finishedProcessingMessage();
-            }
+		if (targetMessage != null) {
+			if (refs!=null) {
+				if (targetMessage.refSummary==null) {targetMessage.refSummary=new Vector();}
+				for (int i = 0; i < refs.length; i++) {
+					targetMessage.refSummary.addElement(refs[i]);
+				}
+			}
+			targetMessage.resolveJoinToken(value, position, fromRef);
+			if (targetMessage.getContinuationToken().isResolved() == true) {
+				pendingMessages.remove(messageId);
+				RunTime.finishedProcessingMessage();
+			}
 
-          } else {
-                  unresolvedTokens.add( new UnresolvedTokenWrapper(messageId, position, value, fromRef,true,currentMessage.refSummary.toArray()));
-          }
-        }
+		} else {
+			unresolvedTokens.add( new UnresolvedTokenWrapper(messageId, position, value, fromRef,true,currentMessage.refSummary.toArray()));
+		}
+	}
 
 
 	public synchronized void resolveToken(String messageId, int position, Object value, String fromRef) {
@@ -661,21 +661,21 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 		 *	target message hasn't reached this actor yet.
 		 */
 		Message targetMessage = (Message)pendingMessages.get(messageId);
-                if (targetMessage != null) {
-                  if (targetMessage.refSummary==null) {targetMessage.refSummary=new Vector();}
-                  if (currentMessage.refSummary!=null) targetMessage.refSummary.addAll(currentMessage.refSummary);
-                    targetMessage.resolveToken(value, position, fromRef);
-                  if (targetMessage.getContinuationToken().isResolved() == true) {
-                      pendingMessages.remove(messageId);
-                      RunTime.finishedProcessingMessage();
-                  }
+		if (targetMessage != null) {
+			if (targetMessage.refSummary==null) {targetMessage.refSummary=new Vector();}
+			if (currentMessage.refSummary!=null) targetMessage.refSummary.addAll(currentMessage.refSummary);
+			targetMessage.resolveToken(value, position, fromRef);
+			if (targetMessage.getContinuationToken().isResolved() == true) {
+				pendingMessages.remove(messageId);
+				RunTime.finishedProcessingMessage();
+			}
 
 		} else {
 			unresolvedTokens.add( new UnresolvedTokenWrapper(messageId, position, value, fromRef,false,currentMessage.refSummary.toArray()) );
 		}
 	}
 
-        public synchronized void resolveToken(String messageId, int position, Object value, String fromRef, Object[] refs) {
+	public synchronized void resolveToken(String messageId, int position, Object value, String fromRef, Object[] refs) {
                 /**
                  *	Try and resolve this token, if no matches are found
                  *	add it to the unresolvedHashtables because its
@@ -683,22 +683,22 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
                  */
                 Message targetMessage = (Message)pendingMessages.get(messageId);
                 if (targetMessage != null) {
-                  if (refs!=null) {
-                    if (targetMessage.refSummary==null) {targetMessage.refSummary=new Vector();}
-                    for (int i = 0; i < refs.length; i++) {
-                      targetMessage.refSummary.addElement(refs[i]);
-                    }
-                  }
-                    targetMessage.resolveToken(value, position, fromRef);
-                  if (targetMessage.getContinuationToken().isResolved() == true) {
-                      pendingMessages.remove(messageId);
-                      RunTime.finishedProcessingMessage();
-                  }
+                	if (refs!=null) {
+                		if (targetMessage.refSummary==null) {targetMessage.refSummary=new Vector();}
+                		for (int i = 0; i < refs.length; i++) {
+                			targetMessage.refSummary.addElement(refs[i]);
+                		}
+                	}
+                	targetMessage.resolveToken(value, position, fromRef);
+                	if (targetMessage.getContinuationToken().isResolved() == true) {
+                		pendingMessages.remove(messageId);
+                		RunTime.finishedProcessingMessage();
+                	}
 
                 } else {
-                        unresolvedTokens.add( new UnresolvedTokenWrapper(messageId, position, value, fromRef,false,currentMessage.refSummary.toArray()) );
+                	unresolvedTokens.add( new UnresolvedTokenWrapper(messageId, position, value, fromRef,false,currentMessage.refSummary.toArray()) );
                 }
-        }
+            }
 
 	/**
 	 *	This method puts a message in this actors mailbox,
@@ -715,15 +715,15 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 	}
 
 	public synchronized void putMessageInMailboxImp(Message message) {
-                if (message.getMethodName().equals("getPlaceholderMsg")) {
-                  Object[] args=message.getArguments();
-                  getPlaceholderMsg((Object[])args[0]);
-                  return;
-                }
-                if (stateMemory.getSnapshotBitAGC()) {
-                  if (message.refSummary!=null)
-                    stateMemory.getForwardMailboxRefList().putReference(message.refSummary);
-                }
+		if (message.getMethodName().equals("getPlaceholderMsg")) {
+			Object[] args=message.getArguments();
+			getPlaceholderMsg((Object[])args[0]);
+			return;
+		}
+		if (stateMemory.getSnapshotBitAGC()) {
+			if (message.refSummary!=null)
+				stateMemory.getForwardMailboxRefList().putReference(message.refSummary);
+		}
 
                 //responseAck(message);
 		/**
@@ -746,48 +746,48 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 				UnresolvedTokenWrapper unresolvedToken = (UnresolvedTokenWrapper)unresolvedTokens.get(i);
 
 				if (unresolvedToken.messageId.equals(messageId)) {
-                                        if (unresolvedToken.isJoin) {
-                                          resolveJoinToken(messageId,unresolvedToken.position,
-                                                           unresolvedToken.value,unresolvedToken.fromRef,unresolvedToken.refs);
-                                        }
-                                        else {
-                                          resolveToken(messageId, unresolvedToken.position,
-                                                       unresolvedToken.value, unresolvedToken.fromRef,unresolvedToken.refs);
-                                        }
+					if (unresolvedToken.isJoin) {
+						resolveJoinToken(messageId,unresolvedToken.position,
+							unresolvedToken.value,unresolvedToken.fromRef,unresolvedToken.refs);
+					}
+					else {
+						resolveToken(messageId, unresolvedToken.position,
+							unresolvedToken.value, unresolvedToken.fromRef,unresolvedToken.refs);
+					}
 					unresolvedTokens.remove(i);
 					i--;
 				}
 			}
 		} else {
 			if (message.getMethodName().equals("construct") || (message.getProperty() != null && message.getProperty().equals("priority"))) {
-                /******* Transactor support ******/
-                if (message.getProperty() != null && message.getProperty().equals("priority") && message.getPropertyParameters() != null && ((String)message.getPropertyParameters()[0]).equals("highPriority")) {
+				/******* Transactor support ******/
+				if (message.getProperty() != null && message.getProperty().equals("priority") && message.getPropertyParameters() != null && ((String)message.getPropertyParameters()[0]).equals("highPriority")) {
                     // This makes sure this message is processed next after a Transactor evaluates the message dependencies in recvMsg
                     // or sets its WV after new transactor creation
-                    mailbox.insertElementAt(message, 0);
-                    /*********************************/
-                }
-                else {
+					mailbox.insertElementAt(message, 0);
+					/*********************************/
+				}
+				else {
 
                     //This makes sure that the message doesn't preceeed messages with high priority
-                    if(mailbox.size()!=0){
-                        int i = 0;
-                        while( i<mailbox.size() && (((Message)mailbox.get(i)).getProperty() != null && ((Message)mailbox.get(i)).getProperty().equals("priority"))) i++;
-                        mailbox.insertElementAt(message, i);
-                    }
-                    else
-                        mailbox.insertElementAt(message, 0);
-                }
+					if(mailbox.size()!=0){
+						int i = 0;
+						while( i<mailbox.size() && (((Message)mailbox.get(i)).getProperty() != null && ((Message)mailbox.get(i)).getProperty().equals("priority"))) i++;
+						mailbox.insertElementAt(message, i);
+					}
+					else
+						mailbox.insertElementAt(message, 0);
+				}
 
 			} else {
 				mailbox.addElement(message);
 			}
 
 			if (message.getMethodName().equals("construct")) {
-                                stateMemory.setActive(true);
+				stateMemory.setActive(true);
 				start();
 			} else {
-                          notify();
+				notify();
 			}
 		}
 	}
@@ -795,9 +795,9 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 	public synchronized Message getMessage() {
 		if (mailbox.isEmpty()) {
 			try {
-                          if (this.unresolvedTokens.isEmpty() && this.pendingMessages.isEmpty()) {
-                            stateMemory.setActive(false);
-                          }
+				if (this.unresolvedTokens.isEmpty() && this.pendingMessages.isEmpty()) {
+					stateMemory.setActive(false);
+				}
 				//System.out.println("waiting:" + this.getIdentifier());
 				wait();      // The lock of Mailbox means it is empty.
 				//System.out.println("wakeup :" + this.getIdentifier());
@@ -807,60 +807,60 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 				System.err.println("\t" + ie);
 			}
 		}
-                 try {
-                    Message nextMessage = (Message) mailbox.remove(0);
-                    return nextMessage;
-                 }catch (Exception e) {return null;}
+		try {
+			Message nextMessage = (Message) mailbox.remove(0);
+			return nextMessage;
+		}catch (Exception e) {return null;}
 
 	}
 
-    /******* Transactor support ******/
-    public boolean rollingback = false;
-    /*********************************/
+	/******* Transactor support ******/
+	public boolean rollingback = false;
+	/*********************************/
 
 	public void run() {
 		standardOutput = ServiceFactory.getOutput();
 		standardError = ServiceFactory.getError();
-                standardInput = ServiceFactory.getInput();
+		standardInput = ServiceFactory.getInput();
 
-                while (isLive()) {
-                        currentMessage = getMessage();
-                        if (currentMessage==null) {continue;}
+		while (isLive()) {
+			currentMessage = getMessage();
+			if (currentMessage==null) {continue;}
 						//System.out.println("process:" + this.getIdentifier() + ", m=" + currentMessage.getMethodName());
 			process(currentMessage);
-                        if (!currentMessage.getMethodName().equals("die") ) {
-                              RunTime.finishedProcessingMessage();
-                        }
-                        currentMessage=null;
+			if (!currentMessage.getMethodName().equals("die") ) {
+				RunTime.finishedProcessingMessage();
+			}
+			currentMessage=null;
 		}
-                if (!migrating && !rollingback) {
-                  if (this.destroyed) {RunTime.finishedProcessingMessage(mailbox.size()+this.pendingMessages.size()-1);}
+		if (!migrating && !rollingback) {
+			if (this.destroyed) {RunTime.finishedProcessingMessage(mailbox.size()+this.pendingMessages.size()-1);}
 
-                  if (uan!=null) ServiceFactory.getTheater().removeSecurityEntry(uan.toString());
-                  ServiceFactory.getNaming().delete(this.getUAN());
-                }
+			if (uan!=null) ServiceFactory.getTheater().removeSecurityEntry(uan.toString());
+			ServiceFactory.getNaming().delete(this.getUAN());
+		}
                 //update security info
 	}
 
-        public boolean isLive() {return (!rollingback) && (!destroyed) && (!migrating) && (!dead || !mailbox.isEmpty());}
+	public boolean isLive() {return (!rollingback) && (!destroyed) && (!migrating) && (!dead || !mailbox.isEmpty());}
 
-        public void addJoinToken(Token joinToken) {
-          if (this.joinTokenList==null) {
-            joinTokenList=new Vector();
-          }
-          this.joinTokenList.add(joinToken);
-        }
+	public void addJoinToken(Token joinToken) {
+		if (this.joinTokenList==null) {
+			joinTokenList=new Vector();
+		}
+		this.joinTokenList.add(joinToken);
+	}
 
 	public void sendGeneratedMessages() {
-          /*create join director at this moment*/
-          if (joinTokenList!=null) {
-            for (int i = 0; i < this.joinTokenList.size(); i++) {
-              Token joinToken = (Token)this.joinTokenList.get(i);
-              joinToken.createJoinDirector();
-              joinToken.setJoinInputsTarget();
-            }
-            joinTokenList.clear();
-          }
+		/*create join director at this moment*/
+		if (joinTokenList!=null) {
+			for (int i = 0; i < this.joinTokenList.size(); i++) {
+				Token joinToken = (Token)this.joinTokenList.get(i);
+				joinToken.createJoinDirector();
+				joinToken.setJoinInputsTarget();
+			}
+			joinTokenList.clear();
+		}
 
 		/**
 		 * When a message is processed, if it sends any messages they are placed in
@@ -890,11 +890,11 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 							System.err.println("\tException: " + e);
 						}
 						target.send(current);
-                                                RunTime.finishedProcessingMessage();
+						RunTime.finishedProcessingMessage();
 
 					}
 				};
-                                RunTime.receivedMessage();
+				RunTime.receivedMessage();
 				new Thread(delayThread, "Delay Thread").start();
 			} else {
 //System.out.println("sending:" + this.getIdentifier() + ", target=" + current.getTarget());
@@ -910,30 +910,30 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 	private boolean migrating = false;
 	public	boolean isMigrating() { return migrating; }
 
-        public void migrate (String newUAL) throws MalformedUALException {
-          try { migrate (new UAL (newUAL)); }
-          catch (MalformedUALException e) { migrate ((UAL) new HOST (newUAL)); }
-        }
+	public void migrate (String newUAL) throws MalformedUALException {
+		try { migrate (new UAL (newUAL)); }
+		catch (MalformedUALException e) { migrate ((UAL) new HOST (newUAL)); }
+	}
 
 	// migrate (UAL) is the primary entrance point for migration
 	public void migrate (UAL targetUAL) {
-                migrating = true;
+		migrating = true;
 
                 //security check
-                  if (uan==null || !ServiceFactory.getTheater().checkSecurityEntry(uan.toString())) {
-                    migrating=false;
-                    System.err.println("Actor migration warnning: Migrating to the same host due to security restrictions.");
-                    System.err.println("\tException: Cannot migrate an actor: either 1) no UAN exists, or 2) there is a security restriction.");
-                    return;
-                }
+		if (uan==null || !ServiceFactory.getTheater().checkSecurityEntry(uan.toString())) {
+			migrating=false;
+			System.err.println("Actor migration warnning: Migrating to the same host due to security restrictions.");
+			System.err.println("\tException: Cannot migrate an actor: either 1) no UAN exists, or 2) there is a security restriction.");
+			return;
+		}
 
 
-                UAL myual=namingService.get(uan);
-                if (myual.getHost().equals(targetUAL.getHost()) && targetUAL.getPort()==myual.getPort()) {
-                  migrating=false;
-                  System.err.println("Actor migration warnning: Migrating to the same host!: Name unchanged.");
-                  return;
-                }
+		UAL myual=namingService.get(uan);
+		if (myual.getHost().equals(targetUAL.getHost()) && targetUAL.getPort()==myual.getPort()) {
+			migrating=false;
+			System.err.println("Actor migration warnning: Migrating to the same host!: Name unchanged.");
+			return;
+		}
 
 		/**
 		 *	Stop the actor from processing more messages while we wait for it
@@ -948,9 +948,9 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 		 * currentContinuation;
 		 */
 		//namingService.remove(uan, ual);
-                ServiceFactory.getTheater().removeSecurityEntry(uan.toString());
+		ServiceFactory.getTheater().removeSecurityEntry(uan.toString());
 		namingService.setEntry(uan, ual, new Placeholder(uan, ual));
-                namingService.update(uan,targetUAL);
+		namingService.update(uan,targetUAL);
 
 		WeakReference remoteSystem = new WeakReference((UniversalActor)UniversalActor.getReferenceByLocation( targetUAL.getLocation() + "salsa/System" ));
 
@@ -961,30 +961,30 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 		Token token1 = new Token();
 
                 //updating ual and uan
-                UAL oldUAL=this.ual;
-                this.ual=targetUAL;
-                self.ual=targetUAL;
+		UAL oldUAL=this.ual;
+		this.ual=targetUAL;
+		self.ual=targetUAL;
 
                 //lock self and
                 //must be removed after receiving the messages from placeholder
-                if (!(this instanceof salsa.resources.EnvironmentalServiceState) &&
-                    !(this instanceof salsa.resources.ActorServiceState))
-                  {stateMemory.getInverseList().putInverseReference("rmsp://me");}
+		if (!(this instanceof salsa.resources.EnvironmentalServiceState) &&
+			!(this instanceof salsa.resources.ActorServiceState))
+			{stateMemory.getInverseList().putInverseReference("rmsp://me");}
 
                 //serialize this actor
-                byte[] serializedArguments;
-                try {
-                  ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                  ObjectOutputStream outStream = new ObjectOutputStream( bos);
-                  outStream.writeObject(this);
-                  outStream.flush();
-                  serializedArguments=bos.toByteArray();
-                  outStream.close();
-                  bos.close();
-                }
-                catch (Exception e) {System.err.println("UniversalActor.State Class, migrate() method: Error on serializing this actor:"+e); return;}
-                RunTime.finishedProcessingMessage(mailbox.size() +
-                                                  this.pendingMessages.size());
+		byte[] serializedArguments;
+		try {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutputStream outStream = new ObjectOutputStream( bos);
+			outStream.writeObject(this);
+			outStream.flush();
+			serializedArguments=bos.toByteArray();
+			outStream.close();
+			bos.close();
+		}
+		catch (Exception e) {System.err.println("UniversalActor.State Class, migrate() method: Error on serializing this actor:"+e); return;}
+		RunTime.finishedProcessingMessage(mailbox.size() +
+			this.pendingMessages.size());
 
 		Object[] addActorArgs = { serializedArguments };
 		Message addActorMsg = new Message(self, remoteSystem, "addActor", addActorArgs, null, token1,false);
@@ -993,9 +993,9 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 		Message removePlaceholderMsg = new Message(self, localSystem, "removePlaceholder", removePlaceholderArgs, token1, currentMessage.getContinuationToken(),false);
 
 		remoteSystem.send(addActorMsg);
-                RunTime.deletedUniversalActor();
+		RunTime.deletedUniversalActor();
 		localSystem.send(removePlaceholderMsg);
-                this.forceAllRefSilent();
+		this.forceAllRefSilent();
 
 		throw new CurrentContinuationException();
 	}
@@ -1026,13 +1026,13 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 			if (uan != null && ref.getUAN() != null) return uan.equals(ref.getUAN());
 			else if (ual != null && ref.getUAL() != null) return ual.equals(ref.getUAN());
 		} if (o instanceof UniversalActor.State) {
-                        UniversalActor.State ref = (UniversalActor.State)o;
+			UniversalActor.State ref = (UniversalActor.State)o;
 
 			if (this.uan != null && ref.getUAN() != null) return this.uan.equals(ref.getUAN());
 			else if (ual != null && ref.getUAL() != null) return ual.equals(ref.getUAN());
 		}
 		return false;
-        }
+	}
 
 	/** The following are used to serialize and deserialize an Actor
 	 */
@@ -1050,37 +1050,37 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
 
 		standardOutput = ServiceFactory.getOutput();
 		standardError = ServiceFactory.getError();
-                standardInput = ServiceFactory.getInput();
+		standardInput = ServiceFactory.getInput();
 		addMethodsForClasses();
 
 		setName(getClass().getName());
 
 		migrating = false;
 		destroyed = false;
-                stateMemory.setPendingMessages(pendingMessages);
-                RunTime.receivedMessage(mailbox.size()+this.pendingMessages.size());
+		stateMemory.setPendingMessages(pendingMessages);
+		RunTime.receivedMessage(mailbox.size()+this.pendingMessages.size());
 	}
 
-        public synchronized void putMessageInMailbox(SystemMessage message) {
-          Message msg =message.castToMessage();
-          if (this instanceof  salsa.resources.EnvironmentalServiceState ||
-              (this instanceof salsa.resources.ActorServiceState)) {
+	public synchronized void putMessageInMailbox(SystemMessage message) {
+		Message msg =message.castToMessage();
+		if (this instanceof  salsa.resources.EnvironmentalServiceState ||
+			(this instanceof salsa.resources.ActorServiceState)) {
             //we do not need to make service actors alive
             //  so system message Ack can be ignored!
-            if (message instanceof Ack) {return;}
-            RunTime.receivedMessage();
-            mailbox.addElement(msg);
-            notify();
-          } else {
-            sysMailbox.addElement(msg);
-          }
-        }
+			if (message instanceof Ack) {return;}
+		RunTime.receivedMessage();
+		mailbox.addElement(msg);
+		notify();
+	} else {
+		sysMailbox.addElement(msg);
+	}
+}
 
-        public void process(SystemMessage message) {
+public void process(SystemMessage message) {
           /***********
            * for future implementation
            ***********/
-        }
+      }
 
     /**********************
     * GC function required
@@ -1097,7 +1097,7 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
     * 6. ServiceDie() : one can invoke it to remove a service actor.
     **********************/
 
-        public synchronized void scanRefInMailboxAGC() {
+    public synchronized void scanRefInMailboxAGC() {
           /**
            * scan the mailbox first, then pendingMessages, and then
            *   unresolved tokens. Don't forget the current message.
@@ -1108,194 +1108,194 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
           Message processingMsg= currentMessage;
           if (processingMsg!=null && processingMsg.getContinuationToken()!=null) {
               // put target addresses in the actor memory for actor GC
-              Vector targetActors=processingMsg.getContinuationToken().getTargetActors();
-              for (int j=0;j<targetActors.size();j++) {
-                ActorReference ref=(ActorReference)targetActors.get(j);
-                fmList.putReference(ref.getID());
+          	Vector targetActors=processingMsg.getContinuationToken().getTargetActors();
+          	for (int j=0;j<targetActors.size();j++) {
+          		ActorReference ref=(ActorReference)targetActors.get(j);
+          		fmList.putReference(ref.getID());
 //System.out.print("-c->"+ref.getID()+" ");
-              }
-              Vector sourceActors=processingMsg.getContinuationToken().getSync();
-              if (sourceActors!=null) {
-                for (int j = 0; j < sourceActors.size(); j++) {
-                  String ref = (String) sourceActors.get(j);
-                  imList.putReference(ref);
+          	}
+          	Vector sourceActors=processingMsg.getContinuationToken().getSync();
+          	if (sourceActors!=null) {
+          		for (int j = 0; j < sourceActors.size(); j++) {
+          			String ref = (String) sourceActors.get(j);
+          			imList.putReference(ref);
 //System.out.print("<-c-"+ref+" ");
-                }
-              }
+          		}
+          	}
           }
 
           for (int i=0;i<mailbox.size();i++) {
-            Message msg=(Message) mailbox.get(i);
-            fmList.putReference(msg.refSummary);
-            Token msgToken=msg.getContinuationToken();
-            if (msgToken!=null) {
+          	Message msg=(Message) mailbox.get(i);
+          	fmList.putReference(msg.refSummary);
+          	Token msgToken=msg.getContinuationToken();
+          	if (msgToken!=null) {
               // put target addresses in the actor memory for actor GC
-              Vector targetActors=msgToken.getTargetActors();
-              for (int j=0;j<targetActors.size();j++) {
-                ActorReference ref=(ActorReference)targetActors.get(j);
-                fmList.putReference(ref.getID());
+          		Vector targetActors=msgToken.getTargetActors();
+          		for (int j=0;j<targetActors.size();j++) {
+          			ActorReference ref=(ActorReference)targetActors.get(j);
+          			fmList.putReference(ref.getID());
 //System.out.print("-m->"+ref.getID()+" ");
-              }
-              Vector sourceActors=msgToken.getSync();
-              if (sourceActors!=null) {
-                for (int j = 0; j < sourceActors.size(); j++) {
-                  String ref = (String) sourceActors.get(j);
-                  imList.putReference(ref);
+          		}
+          		Vector sourceActors=msgToken.getSync();
+          		if (sourceActors!=null) {
+          			for (int j = 0; j < sourceActors.size(); j++) {
+          				String ref = (String) sourceActors.get(j);
+          				imList.putReference(ref);
 //System.out.print("<-m-"+ref+" ");
-                }
-              }
+          			}
+          		}
 
-            }
+          	}
           }
           for (Enumeration e = this.pendingMessages.elements();  e.hasMoreElements(); ) {
-            Message msg=(Message)e.nextElement();
-            Token msgToken=msg.getContinuationToken();
-            if (msgToken!=null) {
+          	Message msg=(Message)e.nextElement();
+          	Token msgToken=msg.getContinuationToken();
+          	if (msgToken!=null) {
               // put target addresses in the actor memory for actor GC
-              Vector targetActors=msgToken.getTargetActors();
-              for (int j=0;j<targetActors.size();j++) {
-                ActorReference ref=(ActorReference)targetActors.get(j);
-                fmList.putReference(ref.getID());
+          		Vector targetActors=msgToken.getTargetActors();
+          		for (int j=0;j<targetActors.size();j++) {
+          			ActorReference ref=(ActorReference)targetActors.get(j);
+          			fmList.putReference(ref.getID());
 //System.out.print("-p->"+ref.getID()+" ");
-              }
+          		}
               //then put source address that the message is waiting for
-              Vector sourceActors=msgToken.getSync();
-              for (int j=0;j<sourceActors.size();j++) {
-                String ref=(String)sourceActors.get(j);
-                imList.putReference(ref);
+          		Vector sourceActors=msgToken.getSync();
+          		for (int j=0;j<sourceActors.size();j++) {
+          			String ref=(String)sourceActors.get(j);
+          			imList.putReference(ref);
 //System.out.print("<-p-"+ref+" ");
-              }
-            }
+          		}
+          	}
 
           }
 //System.out.println();
-        }
+      }
 
-        public synchronized void removeInverseRef(String ref, Integer no) {
-          if (this instanceof  salsa.resources.EnvironmentalServiceState ||
-                    (this instanceof salsa.resources.ActorServiceState)) {return;}
-          stateMemory.getInverseList().removeInverseReference(ref,no.intValue());
-        }
+      public synchronized void removeInverseRef(String ref, Integer no) {
+      	if (this instanceof  salsa.resources.EnvironmentalServiceState ||
+      		(this instanceof salsa.resources.ActorServiceState)) {return;}
+      		stateMemory.getInverseList().removeInverseReference(ref,no.intValue());
+      }
 
-        public synchronized void putInvRefAndUnlock(String refStr,String initRefStr) {
-          if (this instanceof  salsa.resources.EnvironmentalServiceState ||
-                    (this instanceof salsa.resources.ActorServiceState)) {return;}
-          stateMemory.getInverseList().putInverseReference(refStr);
-          EndMsgPassing endMsg=null;
-          WeakReference initRef=WeakReference.parseWeakReference(initRefStr);
-          if (this.uan!=null) {
-            endMsg = new EndMsgPassing(initRef,refStr, this.uan.toString());
-          } else {
-            endMsg = new EndMsgPassing(initRef,refStr, this.ual.toString());
-          }
-          initRef.send(endMsg);
-       }
+      public synchronized void putInvRefAndUnlock(String refStr,String initRefStr) {
+      	if (this instanceof  salsa.resources.EnvironmentalServiceState ||
+      		(this instanceof salsa.resources.ActorServiceState)) {return;}
+      		stateMemory.getInverseList().putInverseReference(refStr);
+      	EndMsgPassing endMsg=null;
+      	WeakReference initRef=WeakReference.parseWeakReference(initRefStr);
+      	if (this.uan!=null) {
+      		endMsg = new EndMsgPassing(initRef,refStr, this.uan.toString());
+      	} else {
+      		endMsg = new EndMsgPassing(initRef,refStr, this.ual.toString());
+      	}
+      	initRef.send(endMsg);
+      }
 
-       public synchronized void endMsgPassing(String targetActor, String referencedActor) {
-             if (this instanceof  salsa.resources.EnvironmentalServiceState ||
-                       (this instanceof salsa.resources.ActorServiceState)) {return;}
-             stateMemory.getForwardList().receiveAck(referencedActor);
-             stateMemory.getForwardList().receiveAck(targetActor);
-       }
+      public synchronized void endMsgPassing(String targetActor, String referencedActor) {
+      	if (this instanceof  salsa.resources.EnvironmentalServiceState ||
+      		(this instanceof salsa.resources.ActorServiceState)) {return;}
+      		stateMemory.getForwardList().receiveAck(referencedActor);
+      	stateMemory.getForwardList().receiveAck(targetActor);
+      }
 
-       public synchronized void removeForwardRef(String ref,Integer i) {
+      public synchronized void removeForwardRef(String ref,Integer i) {
 
-          if (((this instanceof  salsa.resources.EnvironmentalServiceState)||
-                    (this instanceof salsa.resources.ActorServiceState))) {
-            if (stateMemory.getForwardList().removeReferenceImmediately(ref)) {
-              WeakReference invActor;
-              if (ref.charAt(0)=='u') {invActor = new WeakReference(new UAN(ref), null);}
-              else {invActor = new WeakReference(null, new UAL(ref));}
-              invActor.send(new RemoveInverseRefMsg(invActor,new WeakReference(getUAN(),getUAL()), 1));
-            }
+      	if (((this instanceof  salsa.resources.EnvironmentalServiceState)||
+      		(this instanceof salsa.resources.ActorServiceState))) {
+      		if (stateMemory.getForwardList().removeReferenceImmediately(ref)) {
+      			WeakReference invActor;
+      			if (ref.charAt(0)=='u') {invActor = new WeakReference(new UAN(ref), null);}
+      			else {invActor = new WeakReference(null, new UAL(ref));}
+      			invActor.send(new RemoveInverseRefMsg(invActor,new WeakReference(getUAN(),getUAL()), 1));
+      		}
 
-          } else {
-            stateMemory.getForwardList().removeReference(ref);
-          }
-        }
+      	} else {
+      		stateMemory.getForwardList().removeReference(ref);
+      	}
+      }
 
-        public synchronized void receiveAck(String ref,Integer i) {
-          if (this instanceof  salsa.resources.EnvironmentalServiceState ||
-                    (this instanceof salsa.resources.ActorServiceState)) {return;}
-          stateMemory.getForwardList().receiveAck(ref);
-        }
+      public synchronized void receiveAck(String ref,Integer i) {
+      	if (this instanceof  salsa.resources.EnvironmentalServiceState ||
+      		(this instanceof salsa.resources.ActorServiceState)) {return;}
+      		stateMemory.getForwardList().receiveAck(ref);
+      }
 
-        public synchronized void waitAck(String ref) {
-          if (this instanceof  salsa.resources.EnvironmentalServiceState ||
-                    (this instanceof salsa.resources.ActorServiceState)) {return;}
-          stateMemory.getForwardList().waitAck(ref);
-        }
+      public synchronized void waitAck(String ref) {
+      	if (this instanceof  salsa.resources.EnvironmentalServiceState ||
+      		(this instanceof salsa.resources.ActorServiceState)) {return;}
+      		stateMemory.getForwardList().waitAck(ref);
+      }
 
-        protected void responseAck(Message msg) {
-          if (msg.getNeedAck()==false) {return;}
-          if (msg.getMethodName().equals("construct")) {return;}
-          WeakReference ackTarget=(WeakReference)msg.getSource();
-          WeakReference sourceRef=(WeakReference)msg.getTarget();
-          String argument=null;
-          String sourceStr=null;
-          if (ackTarget.getUAN()!=null) {sourceStr=ackTarget.getUAN().toString();}
-          else if (ackTarget.getUAL()!=null) {sourceStr=ackTarget.getUAL().toString();}
-          if (sourceRef.getUAN()!=null) {argument=sourceRef.getUAN().toString();}
-          else if (sourceRef.getUAL()!=null) {argument=sourceRef.getUAL().toString();}
+      protected void responseAck(Message msg) {
+      	if (msg.getNeedAck()==false) {return;}
+      	if (msg.getMethodName().equals("construct")) {return;}
+      	WeakReference ackTarget=(WeakReference)msg.getSource();
+      	WeakReference sourceRef=(WeakReference)msg.getTarget();
+      	String argument=null;
+      	String sourceStr=null;
+      	if (ackTarget.getUAN()!=null) {sourceStr=ackTarget.getUAN().toString();}
+      	else if (ackTarget.getUAL()!=null) {sourceStr=ackTarget.getUAL().toString();}
+      	if (sourceRef.getUAN()!=null) {argument=sourceRef.getUAN().toString();}
+      	else if (sourceRef.getUAL()!=null) {argument=sourceRef.getUAL().toString();}
 
-          if (argument!=null) {
-            if (argument.equals(sourceStr)) {return;}
-            Ack ackMsg = new Ack( ackTarget, argument);
-            ackTarget.send(ackMsg);
-          }
-        }
+      	if (argument!=null) {
+      		if (argument.equals(sourceStr)) {return;}
+      		Ack ackMsg = new Ack( ackTarget, argument);
+      		ackTarget.send(ackMsg);
+      	}
+      }
 
 		//*********************************************************
 		//This method is invoked while a message is about processing
 		//*********************************************************
-		public void  activateArgsGC(Message msg)
-		{
-			byte[] serializedArguments;
-			if (!msg.getHasActorReferenceArgs()) { return; }
-			if (msg.getMethodName().equals("addActor")) { return; }
+      public void  activateArgsGC(Message msg)
+      {
+      	byte[] serializedArguments;
+      	if (!msg.getHasActorReferenceArgs()) { return; }
+      	if (msg.getMethodName().equals("addActor")) { return; }
 			//System.out.println("activate:" + getIdentifier() + ", (=1=)");
-			try
-			{
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				ObjectOutputStream outStream = new ObjectOutputStream(bos);
-				outStream.writeObject(msg.getArguments());
-				outStream.flush();
-				serializedArguments = bos.toByteArray();
-				outStream.close();
-				bos.close();
-			}
-			catch (Exception e) { System.err.println("Message Class, getArguments() method: Error on serializing method arguments:" + e); return; }
+      	try
+      	{
+      		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      		ObjectOutputStream outStream = new ObjectOutputStream(bos);
+      		outStream.writeObject(msg.getArguments());
+      		outStream.flush();
+      		serializedArguments = bos.toByteArray();
+      		outStream.close();
+      		bos.close();
+      	}
+      	catch (Exception e) { System.err.println("Message Class, getArguments() method: Error on serializing method arguments:" + e); return; }
 			//System.out.println("activate:" + getIdentifier() + ", (=2=)");
-			try
-			{
-				ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
-				GCObjectInputStream inStream = new GCObjectInputStream(bis, GCObjectInputStream.ACTIVATE_GC, msg.getWeakRefTarget(), msg.getWeakRefSource());
-				msg.setArguments((Object[])inStream.readObject());
+      	try
+      	{
+      		ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
+      		GCObjectInputStream inStream = new GCObjectInputStream(bis, GCObjectInputStream.ACTIVATE_GC, msg.getWeakRefTarget(), msg.getWeakRefSource());
+      		msg.setArguments((Object[])inStream.readObject());
 				//System.out.println("activate:" + getIdentifier() + ", (=3=)");
-				msg.refSummary = inStream.getRefSummary();
+      		msg.refSummary = inStream.getRefSummary();
 				//System.out.println("activate:" + getIdentifier() + ", (=4=)");
 				//register forward references
-				for (int i = 0; i < msg.refSummary.size(); i++)
-				{
-					stateMemory.getForwardList().putReference(((String)(msg.refSummary.get(i))));
-				}
+      		for (int i = 0; i < msg.refSummary.size(); i++)
+      		{
+      			stateMemory.getForwardList().putReference(((String)(msg.refSummary.get(i))));
+      		}
 				//System.out.println("activate:" + getIdentifier() + ", (=5=)");
-				__messages.addAll(inStream.getMails());
+      		__messages.addAll(inStream.getMails());
 				//for (int i = 0; i < mails.size(); i++)
 				//{
 				//	Message sysmsg = (Message)mails.get(i);
 				//	sysmsg.getTarget().send(sysmsg);
 				//}
-				inStream.clearMails();
+      		inStream.clearMails();
 				//System.out.println("activate:" + getIdentifier() + ", (=6=)");
-				inStream.close();
-				bis.close();
+      		inStream.close();
+      		bis.close();
 				//System.out.println("activate:" + getIdentifier() + ", (=7=)");
 
-			}
-			catch (Exception e) { System.err.println("Message Class, activateArgsGC() method:Error on deserializing method arguments:" + e); }
-			return;
-		}
+      	}
+      	catch (Exception e) { System.err.println("Message Class, activateArgsGC() method:Error on deserializing method arguments:" + e); }
+      	return;
+      }
 
 
         /**
@@ -1304,50 +1304,50 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
          *  writes nothing but filters all actor references and mute them.
          */
         public synchronized void forceAllRefSilent() {
-          try {
-            GCObjectOutputStream outStream =
-                new GCObjectOutputStream(GCObjectOutputStream.FORCE_WEAK);
-            outStream.writeObject(this);
-            outStream.flush();
-            outStream.close();
-          }
-          catch (Exception e) {System.err.println("UniversalActor$State Class, forceAllRefSilent() method: "+e); return;}
+        	try {
+        		GCObjectOutputStream outStream =
+        		new GCObjectOutputStream(GCObjectOutputStream.FORCE_WEAK);
+        		outStream.writeObject(this);
+        		outStream.flush();
+        		outStream.close();
+        	}
+        	catch (Exception e) {System.err.println("UniversalActor$State Class, forceAllRefSilent() method: "+e); return;}
         }
 
         public synchronized void ReactivateGC() {
-          try {
-            GCObjectOutputStream outStream =
-                new GCObjectOutputStream(GCObjectOutputStream.ACTIVATE_GC);
-            outStream.writeObject(this);
-            outStream.flush();
-            outStream.close();
-          }
-          catch (Exception e) {System.err.println("UniversalActor$State Class, ReactivateGC() method: "+e); return;}
+        	try {
+        		GCObjectOutputStream outStream =
+        		new GCObjectOutputStream(GCObjectOutputStream.ACTIVATE_GC);
+        		outStream.writeObject(this);
+        		outStream.flush();
+        		outStream.close();
+        	}
+        	catch (Exception e) {System.err.println("UniversalActor$State Class, ReactivateGC() method: "+e); return;}
         }
 
         public void finalize() {
         }
 
         public synchronized void GCdie() {
-          Object[] args={};
-          Message msg=new Message(null,null,"die",args,false);
-          mailbox.addElement(msg);
-          notify();
+        	Object[] args={};
+        	Message msg=new Message(null,null,"die",args,false);
+        	mailbox.addElement(msg);
+        	notify();
         }
 
         public synchronized void GCdestroy() {
-          Object[] args={};
-          Message msg=new Message(null,null,"destroy",args,false);
-          mailbox.add(0,msg);
-          notify();
+        	Object[] args={};
+        	Message msg=new Message(null,null,"destroy",args,false);
+        	mailbox.add(0,msg);
+        	notify();
         }
 
         public synchronized void ServiceDie() {
-          dead = true;
-          cleanReference();
-          if (uan!=null) this.namingService.delete(uan);
-          else namingService.remove(uan,ual);
-          RunTime.finishedProcessingMessage(mailbox.size()+this.pendingMessages.size());
+        	dead = true;
+        	cleanReference();
+        	if (uan!=null) this.namingService.delete(uan);
+        	else namingService.remove(uan,ual);
+        	RunTime.finishedProcessingMessage(mailbox.size()+this.pendingMessages.size());
         }
 
         private void cleanReference() {
@@ -1355,27 +1355,27 @@ public abstract class State extends Thread implements Actor, java.io.Serializabl
         }
 
         public synchronized String getSelfRefStr() {
-          return stateMemory.getForwardList().getSelfRef();
+        	return stateMemory.getForwardList().getSelfRef();
         }
 
         public synchronized void getPlaceholderMsg(Object[] msgs) {
 
-          if (!(this instanceof salsa.resources.EnvironmentalServiceState)&&
-                    !(this instanceof salsa.resources.ActorServiceState)) {
-            stateMemory.getInverseList().removeInverseReference("rmsp://me",1);
-          }
-          if (msgs==null || msgs.length==0) {
-            notify();return;
-          }
-          for (int i=0;i<msgs.length;i++) {
-            Object msg=msgs[i];
-            if (msg instanceof SystemMessage) {
-              this.putMessageInMailbox((SystemMessage)msg);
-            } else {
-              this.putMessageInMailbox((Message)msg);
-            }
-          }
+        	if (!(this instanceof salsa.resources.EnvironmentalServiceState)&&
+        		!(this instanceof salsa.resources.ActorServiceState)) {
+        		stateMemory.getInverseList().removeInverseReference("rmsp://me",1);
         }
+        if (msgs==null || msgs.length==0) {
+        	notify();return;
+        }
+        for (int i=0;i<msgs.length;i++) {
+        	Object msg=msgs[i];
+        	if (msg instanceof SystemMessage) {
+        		this.putMessageInMailbox((SystemMessage)msg);
+        	} else {
+        		this.putMessageInMailbox((Message)msg);
+        	}
+        }
+    }
 }
 /**END OF UniversalActor.State **/
 }

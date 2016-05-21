@@ -62,37 +62,37 @@ public class Message implements java.io.Serializable {
 	 *	Actor that the message is being sent to.
 	 */
 	private	WeakReference	source, target;
-        private boolean hasActorReferenceArgs=false;
-	    public boolean getHasActorReferenceArgs() { return hasActorReferenceArgs; }
+	private boolean hasActorReferenceArgs=false;
+	public boolean getHasActorReferenceArgs() { return hasActorReferenceArgs; }
 
-        public Vector refSummary=null;
+	public Vector refSummary=null;
 
 
 
 	public	ActorReference	getSource(){
-          if (source==null) {
-            return target;
+		if (source==null) {
+			return target;
             //return null;
-          }
-          return source;
-        }
-	public	ActorReference	getTarget() {
-          return target;
-        }
-
-		public WeakReference getWeakRefSource()
-		{
-			if (source == null)
-			{
-				return target;
-				//return null;
-			}
-			return source;
 		}
-	public WeakReference getWeakRefTarget()
+		return source;
+	}
+	public	ActorReference	getTarget() {
+		return target;
+	}
+
+	public WeakReference getWeakRefSource()
+	{
+		if (source == null)
 		{
 			return target;
+				//return null;
 		}
+		return source;
+	}
+	public WeakReference getWeakRefTarget()
+	{
+		return target;
+	}
 
 	public String getSourceName () {
 		if (source == null) return "";
@@ -119,7 +119,7 @@ public class Message implements java.io.Serializable {
 	 *	the arguments is the value of a yet to be evaluated token an instance of the
 	 *	Token class should be subituted for it until it is evaluated.
 	 */
-        private Object[] arguments;
+	private Object[] arguments;
 
 	/**
 	 *	This is the number of tokens which must be received by the message before
@@ -137,7 +137,7 @@ public class Message implements java.io.Serializable {
         //public  int             getJoinPosition() {return joinPosition;}
 
 	private Token		continuationToken = null;
-        public  void            setContinuationToken(Token cont) { continuationToken=cont; }
+	public  void            setContinuationToken(Token cont) { continuationToken=cont; }
 	public	Token		getContinuationToken()	{ return continuationToken; }
 
 	/**
@@ -166,38 +166,38 @@ public class Message implements java.io.Serializable {
 				}
 				Token currentToken = (Token)propertyParameters[i];
 				if (currentToken.getValue() == null) {
-                                  if (continuationToken==null) {
-                                    continuationToken=new Token("",this.target.getID());
-                                  }
-                                  continuationToken.addSync(currentToken.getOwner());
+					if (continuationToken==null) {
+						continuationToken=new Token("",this.target.getID());
+					}
+					continuationToken.addSync(currentToken.getOwner());
 					//requiredTokens++;
 					if (target != null) currentToken.addTarget(target, messageId, -3);
 					else currentToken.addTarget(source, messageId, -3);
 				}
 			}
-                      } else if (propertyName.equals("delayWaitfor")) {
-                        try{
-                          for (int i = 1; i < propertyParameters.length; i++) {
-                            Token currentToken = (Token)propertyParameters[i];
-                            if (currentToken.getValue() == null) {
-                              if (continuationToken==null) {
-                                continuationToken=new Token("",this.target.getID());
-                              }
-                              continuationToken.addSync(currentToken.getOwner());
+		} else if (propertyName.equals("delayWaitfor")) {
+			try{
+				for (int i = 1; i < propertyParameters.length; i++) {
+					Token currentToken = (Token)propertyParameters[i];
+					if (currentToken.getValue() == null) {
+						if (continuationToken==null) {
+							continuationToken=new Token("",this.target.getID());
+						}
+						continuationToken.addSync(currentToken.getOwner());
                               //requiredTokens++;
-                              if (target != null)
-                                currentToken.addTarget(target, messageId, -3);
-                              else
-                                currentToken.addTarget(source, messageId, -3);
-                            }
-                          }
-                        }catch (Exception e) {
-                                              System.err.println("Message Creation Error:");
-                                              System.err.println("\tA parameter of a waitfor property was not a token.");
-                                              System.err.println("\tOn message: " + toString());
-                                              return;
-                        }
-                      }
+						if (target != null)
+							currentToken.addTarget(target, messageId, -3);
+						else
+							currentToken.addTarget(source, messageId, -3);
+					}
+				}
+			}catch (Exception e) {
+				System.err.println("Message Creation Error:");
+				System.err.println("\tA parameter of a waitfor property was not a token.");
+				System.err.println("\tOn message: " + toString());
+				return;
+			}
+		}
 
 	}
 
@@ -215,10 +215,10 @@ public class Message implements java.io.Serializable {
 		 */
 		if (continuationToken != null) {
 			if (!continuationToken.isJoinInput()) {
-                          continuationToken.resolve(target, value);
-                        }
+				continuationToken.resolve(target, value);
+			}
 			else {
-                          continuationToken.resolveJoin(target,value);
+				continuationToken.resolveJoin(target,value);
 				/**
 				 * If this message was part of a join block, we need to also send
 				 * the token to the join director, specifying where that token needs
@@ -275,52 +275,52 @@ public class Message implements java.io.Serializable {
 
 		synchronized(methodName) {
 			//requiredTokens--;
-                        this.continuationToken.resolveSync(sourceRef);
+			this.continuationToken.resolveSync(sourceRef);
 			if (this.continuationToken.isResolved()) {
-                                this.setNeedAck(false);
+				this.setNeedAck(false);
 				target.send(this);
 			}
 		}
 	}
 
-        public void resolveJoinToken(Object value, int position, String sourceRef) {
+	public void resolveJoinToken(Object value, int position, String sourceRef) {
 
-          continuationToken.receiveJoinToken(value,position);
-          if (continuationToken.isJoinResolved()) {
-            int joinPosition=continuationToken.getJoinPosition();
-            if (joinPosition>=0) {
-              arguments[joinPosition] = continuationToken.getJoinData().getJoinArgs();
-            }
-          }
+		continuationToken.receiveJoinToken(value,position);
+		if (continuationToken.isJoinResolved()) {
+			int joinPosition=continuationToken.getJoinPosition();
+			if (joinPosition>=0) {
+				arguments[joinPosition] = continuationToken.getJoinData().getJoinArgs();
+			}
+		}
 
-          synchronized(methodName) {
+		synchronized(methodName) {
                   //requiredTokens--;
-                  this.continuationToken.resolveSync(sourceRef);
-                  if (this.continuationToken.isResolved()) {
-                          this.setNeedAck(false);
-                          target.send(this);
-                  }
-          }
-        }
+			this.continuationToken.resolveSync(sourceRef);
+			if (this.continuationToken.isResolved()) {
+				this.setNeedAck(false);
+				target.send(this);
+			}
+		}
+	}
 
 
-        public Message(ActorReference source, Object target, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken)  {
-          this(source, target, methodName, arguments, synchronizationToken, continuationToken,true,true);
-        }
+	public Message(ActorReference source, Object target, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken)  {
+		this(source, target, methodName, arguments, synchronizationToken, continuationToken,true,true);
+	}
 
-        public Message(WeakReference source, WeakReference target, String methodName, Object[] arguments, boolean requireAck) {
-          this.needAck=requireAck;
-          this.target=target;
-          this.source=source;
-          this.methodName=methodName;
-          this.arguments=arguments;
-          this.continuationToken=null;
-          if (needAck) {this.waitAck();}
-        }
+	public Message(WeakReference source, WeakReference target, String methodName, Object[] arguments, boolean requireAck) {
+		this.needAck=requireAck;
+		this.target=target;
+		this.source=source;
+		this.methodName=methodName;
+		this.arguments=arguments;
+		this.continuationToken=null;
+		if (needAck) {this.waitAck();}
+	}
 
-        public Message(ActorReference source, Object target, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken, boolean requireAck) {
-          this(source,target,methodName,arguments,synchronizationToken, continuationToken, requireAck, true);
-        }
+	public Message(ActorReference source, Object target, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken, boolean requireAck) {
+		this(source,target,methodName,arguments,synchronizationToken, continuationToken, requireAck, true);
+	}
 
 	/**
 	 * These are the constructors for message.  The second is used if the message
@@ -331,22 +331,22 @@ public class Message implements java.io.Serializable {
 	 * well as the parameters.
 	 */
 	public Message(ActorReference source, Object target, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken, boolean requireAck, boolean isCallByValue) {
-          Token currentJoinToken=null;
-          ActorReference targetActor;
+		Token currentJoinToken=null;
+		ActorReference targetActor;
 
-          if (requireAck) {
-                  if (target instanceof salsa.resources.EnvironmentalService) {
-                    needAck = false;
-                  }
-                  else if (!source.equals(target)) {
-                    needAck = true;
-                  }
-                  else needAck=false;
-                } else {needAck=false;}
+		if (requireAck) {
+			if (target instanceof salsa.resources.EnvironmentalService) {
+				needAck = false;
+			}
+			else if (!source.equals(target)) {
+				needAck = true;
+			}
+			else needAck=false;
+		} else {needAck=false;}
 
 		this.messageId = ServiceFactory.getNaming().getUniqueMessageId();
 		if (source!=null) {this.source = new WeakReference(source);}
-                else {this.source=null;}
+		else {this.source=null;}
 
 
 		/**
@@ -382,23 +382,23 @@ public class Message implements java.io.Serializable {
                  *   join{...}@dummy()@join{....}@.....
                  */
                 if (continuationToken!=null && continuationToken.isJoinDirector() &&
-                    synchronizationToken!=null && synchronizationToken.isJoinDirector()) {
-                  Token connectionToken=synchronizationToken.getJoinJoinToken();
-                  if (connectionToken==null){
-                    Object sourceActor = ServiceFactory.getNaming().getSourceActor(this.
-                        source);
-                    if (sourceActor != null && sourceActor instanceof UniversalActor.State) {
-                      connectionToken = new Token("",targetActor.getID());
-                      Object _arguments[] = {};
-                      Message message = new Message(source, targetActor, "isDead",
-                                                    _arguments, synchronizationToken,
-                                                    connectionToken);
-                      ((UniversalActor.State)sourceActor).__messages.add(message);
-                      synchronizationToken.setJoinJoinToken(connectionToken);
-                    }
-                  }
-                  synchronizationToken=connectionToken;
+                	synchronizationToken!=null && synchronizationToken.isJoinDirector()) {
+                	Token connectionToken=synchronizationToken.getJoinJoinToken();
+                if (connectionToken==null){
+                	Object sourceActor = ServiceFactory.getNaming().getSourceActor(this.
+                		source);
+                	if (sourceActor != null && sourceActor instanceof UniversalActor.State) {
+                		connectionToken = new Token("",targetActor.getID());
+                		Object _arguments[] = {};
+                		Message message = new Message(source, targetActor, "isDead",
+                			_arguments, synchronizationToken,
+                			connectionToken);
+                		((UniversalActor.State)sourceActor).__messages.add(message);
+                		synchronizationToken.setJoinJoinToken(connectionToken);
+                	}
                 }
+                synchronizationToken=connectionToken;
+            }
 
 
                 /**
@@ -409,15 +409,15 @@ public class Message implements java.io.Serializable {
                  */
 
                 if (continuationToken!=null) {
-                 if (continuationToken.isJoinDirector()) {
-                   currentJoinToken = continuationToken;
-                   continuationToken = new Token("",targetActor.getID());
-                   currentJoinToken.addSync(targetActor.getID());
-                   continuationToken.setisJoinInput(true);
-                   currentJoinToken.addJoinInputTokens(continuationToken);
-                 }else {
-                   continuationToken.setOwner(targetActor.getID());
-                 }
+                	if (continuationToken.isJoinDirector()) {
+                		currentJoinToken = continuationToken;
+                		continuationToken = new Token("",targetActor.getID());
+                		currentJoinToken.addSync(targetActor.getID());
+                		continuationToken.setisJoinInput(true);
+                		currentJoinToken.addJoinInputTokens(continuationToken);
+                	}else {
+                		continuationToken.setOwner(targetActor.getID());
+                	}
                 }
 
 		/**
@@ -447,23 +447,23 @@ public class Message implements java.io.Serializable {
 				Token token = (Token)arguments[i];
 				arguments[i] = token.getValue();
 				if (arguments[i] == null) {
-                                  if (token.isJoinDirector()) {
-                                    if (!token.isJoinResolved()) token.setJoinPosition(i);
-                                      else {arguments[i]=new Object[0];}
-                                  } else {
-                                    if (continuationToken==null) {
-                                      continuationToken=new Token("",targetActor.getID());
-                                    }
-                                    token.addTarget(targetActor, messageId, i);
-                                    continuationToken.addSync(token.getOwner());
-                                  }
+					if (token.isJoinDirector()) {
+						if (!token.isJoinResolved()) token.setJoinPosition(i);
+						else {arguments[i]=new Object[0];}
+					} else {
+						if (continuationToken==null) {
+							continuationToken=new Token("",targetActor.getID());
+						}
+						token.addTarget(targetActor, messageId, i);
+						continuationToken.addSync(token.getOwner());
+					}
 				}
 			}
 		}
 
-                if (needAck) {this.waitAck();}
-                this.arguments=arguments;
-                if (isCallByValue) {this.referenceSplitting();}
+		if (needAck) {this.waitAck();}
+		this.arguments=arguments;
+		if (isCallByValue) {this.referenceSplitting();}
 
 		/**
 		 *	If there is a synchronization token, we add it to
@@ -471,27 +471,27 @@ public class Message implements java.io.Serializable {
 		 */
 		if (synchronizationToken != null && synchronizationToken.getValue() == null) {
 			//requiredTokens++;
-                        if (synchronizationToken.isJoinDirector()) {
-                          if (!synchronizationToken.isResolved()) {
-                            if (continuationToken == null) {
-                              continuationToken = new Token("",targetActor.getID());
-                            }
-                            continuationToken.addSync(synchronizationToken.getSync());
-                            continuationToken.setJoinData(synchronizationToken.getJoinData());
+			if (synchronizationToken.isJoinDirector()) {
+				if (!synchronizationToken.isResolved()) {
+					if (continuationToken == null) {
+						continuationToken = new Token("",targetActor.getID());
+					}
+					continuationToken.addSync(synchronizationToken.getSync());
+					continuationToken.setJoinData(synchronizationToken.getJoinData());
                             //continuationToken.setJoinPosition(synchronizationToken.getJoinPosition());
-                            synchronizationToken.setOwner(targetActor.getID());
-                            synchronizationToken.addJoinMessageId(this.messageId);
-                          }
-                        } else {
-                          if (continuationToken==null) {
-                            continuationToken = new Token("",targetActor.getID());
-                          }
-			  synchronizationToken.addTarget( targetActor, messageId, -3 );
-                          continuationToken.addSync(synchronizationToken.getOwner());
-                        }
+					synchronizationToken.setOwner(targetActor.getID());
+					synchronizationToken.addJoinMessageId(this.messageId);
+				}
+			} else {
+				if (continuationToken==null) {
+					continuationToken = new Token("",targetActor.getID());
+				}
+				synchronizationToken.addTarget( targetActor, messageId, -3 );
+				continuationToken.addSync(synchronizationToken.getOwner());
+			}
 		} else {
 
-                }
+		}
 
 		/**
 		 *	If the results of this message invocation need to
@@ -536,96 +536,96 @@ public class Message implements java.io.Serializable {
      * by WeiJen
      *****/
 
-        public void referenceSplitting() {
-          byte[] serializedArguments;
-          if (arguments==null || arguments.length==0) {
-            return;
-          }
-          if (this.methodName.equals("addActor") || this.methodName.equals("reloadTransactor")) {return;}
+    public void referenceSplitting() {
+    	byte[] serializedArguments;
+    	if (arguments==null || arguments.length==0) {
+    		return;
+    	}
+    	if (this.methodName.equals("addActor") || this.methodName.equals("reloadTransactor")) {return;}
 
-          try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream outStream = new ObjectOutputStream( bos);
-            outStream.writeObject(arguments);
-            outStream.flush();
-            serializedArguments=bos.toByteArray();
-            outStream.close();
-            bos.close();
-          }
-          catch (Exception e) {System.err.println("Message Class, referenceSplitting() method: Error on serializing method arguments:"+e); return;}
+    	try {
+    		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    		ObjectOutputStream outStream = new ObjectOutputStream( bos);
+    		outStream.writeObject(arguments);
+    		outStream.flush();
+    		serializedArguments=bos.toByteArray();
+    		outStream.close();
+    		bos.close();
+    	}
+    	catch (Exception e) {System.err.println("Message Class, referenceSplitting() method: Error on serializing method arguments:"+e); return;}
 
-          try {
-            ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
-            GCObjectInputStream inStream;
-            inStream = new GCObjectInputStream(bis,GCObjectInputStream.MUTE_GC,source,target);
-            arguments= (Object[]) inStream.readObject();
-            inStream.close();
-            bis.close();
-            refSummary=inStream.getRefSummary();
-            hasActorReferenceArgs=(refSummary.size()>0);
-          }
-          catch (Exception e) {System.err.println("Message Class, referenceSplitting() method:Error on deserializing method arguments:"+e); }
-        }
+    	try {
+    		ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
+    		GCObjectInputStream inStream;
+    		inStream = new GCObjectInputStream(bis,GCObjectInputStream.MUTE_GC,source,target);
+    		arguments= (Object[]) inStream.readObject();
+    		inStream.close();
+    		bis.close();
+    		refSummary=inStream.getRefSummary();
+    		hasActorReferenceArgs=(refSummary.size()>0);
+    	}
+    	catch (Exception e) {System.err.println("Message Class, referenceSplitting() method:Error on deserializing method arguments:"+e); }
+    }
 
-        public	Object[]	getArguments()	{return arguments;}
+    public	Object[]	getArguments()	{return arguments;}
 
-	    public void setArguments(Object[] args) { arguments = args; }
+    public void setArguments(Object[] args) { arguments = args; }
 
         //*********************************************************
         //This method is invoked while a message is about processing
         //*********************************************************
-        public void activateArgsGC(UniversalActor.State sourceActor) {
-          byte[] serializedArguments;
-          if (arguments==null) {return;}
-          if (!hasActorReferenceArgs) {return;}
-          if (this.methodName.equals("addActor")) {return;}
-          try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream outStream = new ObjectOutputStream( bos);
-            outStream.writeObject(arguments);
-            outStream.flush();
-            serializedArguments=bos.toByteArray();
-            outStream.close();
-            bos.close();
-          }
-          catch (Exception e) {System.err.println("Message Class, getArguments() method: Error on serializing method arguments:"+e); return;}
+    public void activateArgsGC(UniversalActor.State sourceActor) {
+    	byte[] serializedArguments;
+    	if (arguments==null) {return;}
+    	if (!hasActorReferenceArgs) {return;}
+    	if (this.methodName.equals("addActor")) {return;}
+    	try {
+    		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    		ObjectOutputStream outStream = new ObjectOutputStream( bos);
+    		outStream.writeObject(arguments);
+    		outStream.flush();
+    		serializedArguments=bos.toByteArray();
+    		outStream.close();
+    		bos.close();
+    	}
+    	catch (Exception e) {System.err.println("Message Class, getArguments() method: Error on serializing method arguments:"+e); return;}
 
-          try {
-            ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
-            GCObjectInputStream inStream = new GCObjectInputStream(bis,GCObjectInputStream.ACTIVATE_GC,target,source);
-            arguments= (Object[]) inStream.readObject();
-            refSummary=inStream.getRefSummary();
+    	try {
+    		ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
+    		GCObjectInputStream inStream = new GCObjectInputStream(bis,GCObjectInputStream.ACTIVATE_GC,target,source);
+    		arguments= (Object[]) inStream.readObject();
+    		refSummary=inStream.getRefSummary();
 
             //register forward references
-            for (int i=0;i<refSummary.size();i++) {
-              sourceActor.getActorMemory().getForwardList().putReference(((String)(refSummary.get(i))));
-            }
-            inStream.sendMails();
+    		for (int i=0;i<refSummary.size();i++) {
+    			sourceActor.getActorMemory().getForwardList().putReference(((String)(refSummary.get(i))));
+    		}
+    		inStream.sendMails();
 
-            inStream.close();
-            bis.close();
-          }
-          catch (Exception e) {System.err.println("Message Class, activateArgsGC() method:Error on deserializing method arguments:"+e); }
-          return;
-        }
+    		inStream.close();
+    		bis.close();
+    	}
+    	catch (Exception e) {System.err.println("Message Class, activateArgsGC() method:Error on deserializing method arguments:"+e); }
+    	return;
+    }
 
-        public void waitAck() {
-          if (!needAck) {return;}
-          if (this.target!=null) {
-            String targetRefStr=null;
-            String sourceRefStr=null;
-            if (this.target.getUAN()!=null) {targetRefStr=this.target.getUAN().toString();}
-            else if (this.target.getUAL()!=null) {targetRefStr=this.target.getUAL().toString();}
+    public void waitAck() {
+    	if (!needAck) {return;}
+    	if (this.target!=null) {
+    		String targetRefStr=null;
+    		String sourceRefStr=null;
+    		if (this.target.getUAN()!=null) {targetRefStr=this.target.getUAN().toString();}
+    		else if (this.target.getUAL()!=null) {targetRefStr=this.target.getUAL().toString();}
 
             //increase the expected ack number!
-             Object sourceActor=ServiceFactory.getNaming().getSourceActor(this.source);
-             if (sourceActor!=null && sourceActor instanceof UniversalActor.State) {
-               if (this.target.getUAN()!=null) {targetRefStr=this.target.getUAN().toString();}
-               else if (this.target.getUAL()!=null) {targetRefStr=this.target.getUAL().toString();}
-               if (targetRefStr!=null) {
-                 ( (UniversalActor.State) sourceActor).waitAck(targetRefStr);
-               }
-             }
-          }
-        }
+    		Object sourceActor=ServiceFactory.getNaming().getSourceActor(this.source);
+    		if (sourceActor!=null && sourceActor instanceof UniversalActor.State) {
+    			if (this.target.getUAN()!=null) {targetRefStr=this.target.getUAN().toString();}
+    			else if (this.target.getUAL()!=null) {targetRefStr=this.target.getUAL().toString();}
+    			if (targetRefStr!=null) {
+    				( (UniversalActor.State) sourceActor).waitAck(targetRefStr);
+    			}
+    		}
+    	}
+    }
 }

@@ -54,15 +54,15 @@ public class ServiceFactory {
 	private static TransportService		transport	= null;
 	private static NamingService		naming		= null;
 	private static ActorReference		output		= null;
-        private static ActorReference           input           = null;
+	private static ActorReference           input           = null;
 	private static ActorReference		error		= null;
 	private static ActorReference		storage		= null;
 	private static SystemService		system		= null;
-        private static LocalCollector           GC              = null;
-        private static GCAgent                  gcAgent         = null;
-        private static ActorReference           dummySVC        = null;
-        private static TStorageService          Tstorage = null;
-        private static CDSUpdateDirector Tdirector = null;
+	private static LocalCollector           GC              = null;
+	private static GCAgent                  gcAgent         = null;
+	private static ActorReference           dummySVC        = null;
+	private static TStorageService          Tstorage = null;
+	private static CDSUpdateDirector Tdirector = null;
 
 	//default service classes
 	private static String			theaterClass	= "wwc.messaging.Theater";
@@ -72,16 +72,16 @@ public class ServiceFactory {
 
 	private static String			namingClass	= "wwc.naming.WWCNamingService";
 	private static String			outputClass	= "wwc.resources.StandardOutput";
-        private static String			inputClass	= "wwc.resources.StandardInput";
+	private static String			inputClass	= "wwc.resources.StandardInput";
 	private static String			errorClass	= "wwc.resources.StandardError";
 	private static String			storageClass	= "wwc.resources.StandardDisk";
 
 	private static String			systemClass	= "wwc.messaging.WWCSystem";
-        private static String			GCClass	        = "gc.serverGC.SLocalPRID";
-        private static String			GCAgentClass	= "gc.serverGC.GCAgent";
-        private static String                   DummySVCClass   = "salsa.resources.Dummy";
-        private static String                   TstorageClass = "transactor.resources.TestTStorageService";
-        private static String                   TdirectorClass = "transactor.language.CDSUpdateDirector";
+	private static String			GCClass	        = "gc.serverGC.SLocalPRID";
+	private static String			GCAgentClass	= "gc.serverGC.GCAgent";
+	private static String                   DummySVCClass   = "salsa.resources.Dummy";
+	private static String                   TstorageClass = "transactor.resources.TestTStorageService";
+	private static String                   TdirectorClass = "transactor.language.CDSUpdateDirector";
 
 	//Applets cannot access System, so we have to make sure
 	//this theater is not an AppletTheater before doing so.
@@ -99,10 +99,10 @@ public class ServiceFactory {
 	public synchronized static void setTransportClass(String transport)		{ ServiceFactory.transportClass	= transport; }
 	public synchronized static void setNamingClass(String naming)			{ ServiceFactory.namingClass	= naming; }
 	public synchronized static void setOutputClass(String output)			{ ServiceFactory.outputClass	= output; }
-        public synchronized static void setInputClass(String input)			{ ServiceFactory.inputClass	= input; }
+	public synchronized static void setInputClass(String input)			{ ServiceFactory.inputClass	= input; }
 	public synchronized static void setErrorClass(String error)			{ ServiceFactory.errorClass	= error; }
 	public synchronized static void setStorageClass(String storage)			{ ServiceFactory.storageClass	= storage; }
-    public synchronized static void setSystemClass(String system)			{ ServiceFactory.systemClass	= system; }
+	public synchronized static void setSystemClass(String system)			{ ServiceFactory.systemClass	= system; }
 	public synchronized static void setTStorageClass(String Tstorage)			{ ServiceFactory.TstorageClass	= Tstorage; }
 
 	public synchronized static void setTheater(TheaterService theater)		{ ServiceFactory.theater	= theater; }
@@ -112,9 +112,9 @@ public class ServiceFactory {
 	public synchronized static void setError(ErrorService error)			{ ServiceFactory.error		= error; }
 	public synchronized static void setStorage(StorageService storage)		{ ServiceFactory.storage	= storage; }
 	public synchronized static void setSystem(SystemService system)			{ ServiceFactory.system		= system; }
-        public synchronized static void setGC(LocalCollector gc)			{ ServiceFactory.GC		= gc; }
-        public synchronized static void setGCAgent(GCAgent gcAgent)                     { ServiceFactory.gcAgent	= gcAgent; }
-        public synchronized static void setDummySVC(ActorReference dummySVC)            { ServiceFactory.dummySVC	= dummySVC;}
+	public synchronized static void setGC(LocalCollector gc)			{ ServiceFactory.GC		= gc; }
+	public synchronized static void setGCAgent(GCAgent gcAgent)                     { ServiceFactory.gcAgent	= gcAgent; }
+	public synchronized static void setDummySVC(ActorReference dummySVC)            { ServiceFactory.dummySVC	= dummySVC;}
 
 
 	public static void printErrorMessage(String className, Exception e) {
@@ -142,19 +142,19 @@ public class ServiceFactory {
 			//System.err.println("\tThrew exception: " + e);
 			//e.printStackTrace();
 		}
-                try {
-                        Class[] parTypes = { Class.forName("salsa.naming.UAL"),Class.forName("salsa.language.UniversalActor$State") };
-                        Constructor actorConstructor = Class.forName(className).getConstructor(parTypes);
+		try {
+			Class[] parTypes = { Class.forName("salsa.naming.UAL"),Class.forName("salsa.language.UniversalActor$State") };
+			Constructor actorConstructor = Class.forName(className).getConstructor(parTypes);
 
-                        Object[] args = { new UAL(getTheater().getLocation() + identifier), null };
-                        return ((ActorReference)actorConstructor.newInstance( args )).construct();
-                } catch (Exception e) {
-                        System.err.println("Service Factory Error:");
-                        System.err.println("\tCould not create system actor: " + className);
-                        System.err.println("\tWith identifier: " + identifier);
-                        System.err.println("\tThrew exception: " + e);
-                        e.printStackTrace();
-                }
+			Object[] args = { new UAL(getTheater().getLocation() + identifier), null };
+			return ((ActorReference)actorConstructor.newInstance( args )).construct();
+		} catch (Exception e) {
+			System.err.println("Service Factory Error:");
+			System.err.println("\tCould not create system actor: " + className);
+			System.err.println("\tWith identifier: " + identifier);
+			System.err.println("\tThrew exception: " + e);
+			e.printStackTrace();
+		}
 
 		return null;
 	}
@@ -182,42 +182,42 @@ public class ServiceFactory {
 		return system;
 	}
 
-        public synchronized static LocalCollector getGC() {
-                if (GC == null) {
+	public synchronized static LocalCollector getGC() {
+		if (GC == null) {
                         // Check for the messagingService.
-                        String className = null;
-                        if (!applet) className = System.getProperty( "GC" );
-                        if (className == null) className = GCClass;
+			String className = null;
+			if (!applet) className = System.getProperty( "GC" );
+			if (className == null) className = GCClass;
 
-                        try {
-                                Class[] parTypes = { };
-                                Object[] args={};
-                                Constructor actorConstructor = Class.forName(className).getConstructor(parTypes);
-                                GC=(LocalCollector) actorConstructor.newInstance( args );
-                                return GC;
+			try {
+				Class[] parTypes = { };
+				Object[] args={};
+				Constructor actorConstructor = Class.forName(className).getConstructor(parTypes);
+				GC=(LocalCollector) actorConstructor.newInstance( args );
+				return GC;
 
-                        } catch (Exception e) {
-                                System.err.println("Service Factory Error:");
-                                System.err.println("\tCould not create system class: " + className);
-                                System.err.println("\tThrew exception: " + e);
-                                e.printStackTrace();
-                        }
-                }
+			} catch (Exception e) {
+				System.err.println("Service Factory Error:");
+				System.err.println("\tCould not create system class: " + className);
+				System.err.println("\tThrew exception: " + e);
+				e.printStackTrace();
+			}
+		}
 
-                return GC;
-        }
+		return GC;
+	}
 
-        public synchronized static GCAgent getGCAgent() {
-                if (gcAgent == null) {
-                  String className = null;
-                  if (!applet) className = System.getProperty("GCAgent");
-                  if (className == null) className = GCAgentClass;
+	public synchronized static GCAgent getGCAgent() {
+		if (gcAgent == null) {
+			String className = null;
+			if (!applet) className = System.getProperty("GCAgent");
+			if (className == null) className = GCAgentClass;
 
-                  try { gcAgent = (GCAgent) createActor(className, "salsa/GCAgent");}
-                  catch (Exception e) { printErrorMessage(className, e);}
-                }
-                return gcAgent;
-        }
+			try { gcAgent = (GCAgent) createActor(className, "salsa/GCAgent");}
+			catch (Exception e) { printErrorMessage(className, e);}
+		}
+		return gcAgent;
+	}
 
 
 	/**
@@ -228,10 +228,10 @@ public class ServiceFactory {
 	 */
 	public synchronized static ActorReference getOutput() {
 		if (output == null) {
-                  if (theater==null || theater.isRestricted()) {
-                    output=getDummy();
-                    return output;
-                  }
+			if (theater==null || theater.isRestricted()) {
+				output=getDummy();
+				return output;
+			}
 			// Check for the messagingService.
 			String className = null;
 			if (!applet) className = System.getProperty( "output" );
@@ -254,26 +254,26 @@ public class ServiceFactory {
          * @return InputService
          */
         public synchronized static ActorReference getInput() {
-                if (input == null) {
-                  if (theater==null || theater.isRestricted()) {
-                    input=getDummy();
-                    return input;
-                  }
+        	if (input == null) {
+        		if (theater==null || theater.isRestricted()) {
+        			input=getDummy();
+        			return input;
+        		}
 
 
                         // Check for the messagingService.
-                        String className = null;
-                        if (!applet) className = System.getProperty( "input" );
-                        if (className == null) className = inputClass;
+        		String className = null;
+        		if (!applet) className = System.getProperty( "input" );
+        		if (className == null) className = inputClass;
 
-                        try {
-                                input = (InputService)createActor(className, "salsa/StandardInput");
-                        } catch (Exception e) {
-                                printErrorMessage(className, e);
-                        }
-                }
+        		try {
+        			input = (InputService)createActor(className, "salsa/StandardInput");
+        		} catch (Exception e) {
+        			printErrorMessage(className, e);
+        		}
+        	}
 
-                return input;
+        	return input;
         }
 
 
@@ -285,10 +285,10 @@ public class ServiceFactory {
 	 */
 	public synchronized static ActorReference getError() {
 		if (error == null) {
-                  if (theater==null || theater.isRestricted()) {
-                    error=getDummy();
-                    return error;
-                  }
+			if (theater==null || theater.isRestricted()) {
+				error=getDummy();
+				return error;
+			}
 			// Check for the messagingService.
 			String className = null;
 			if (!applet) className = System.getProperty( "error" );
@@ -312,10 +312,10 @@ public class ServiceFactory {
 	 */
 	public synchronized static ActorReference getStorage() {
 		if (storage == null) {
-                  if (theater==null || theater.isRestricted()) {
-                    storage=getDummy();
-                    return storage;
-                  }
+			if (theater==null || theater.isRestricted()) {
+				storage=getDummy();
+				return storage;
+			}
 			// Check for the messagingService.
 			String className = null;
 			if (!applet) className = System.getProperty( "storage" );
@@ -427,11 +427,11 @@ public class ServiceFactory {
 	 */
 	public synchronized static CDSUpdateDirector getCDSUpdateDirector() {
 
-			try {
-				Tdirector = (CDSUpdateDirector)createActor(TdirectorClass, "transactor/CDSUpdateDirector");
-			} catch (Exception e) {
-				printErrorMessage(TdirectorClass, e);
-			}
+		try {
+			Tdirector = (CDSUpdateDirector)createActor(TdirectorClass, "transactor/CDSUpdateDirector");
+		} catch (Exception e) {
+			printErrorMessage(TdirectorClass, e);
+		}
 
 		return Tdirector;
 	}
@@ -456,19 +456,19 @@ public class ServiceFactory {
 		return theater;
 	}
 
-        public synchronized static ActorReference getDummy() {
-                if (dummySVC == null) {
-                        String className = null;
-                        if (!applet) className = System.getProperty( "dummySVC" );
-                        if (className == null) className = DummySVCClass;
-                        try {
-                                dummySVC = (ActorReference)createActor(className, "salsa/DummySVC");
-                        } catch (Exception e) {
-                                printErrorMessage(className, e);
-                        }
+	public synchronized static ActorReference getDummy() {
+		if (dummySVC == null) {
+			String className = null;
+			if (!applet) className = System.getProperty( "dummySVC" );
+			if (className == null) className = DummySVCClass;
+			try {
+				dummySVC = (ActorReference)createActor(className, "salsa/DummySVC");
+			} catch (Exception e) {
+				printErrorMessage(className, e);
+			}
 
-                }
-                return dummySVC;
-        }
+		}
+		return dummySVC;
+	}
 
 }
