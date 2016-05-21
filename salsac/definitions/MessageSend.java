@@ -54,16 +54,16 @@ public class MessageSend extends SimpleNode {
 	}
 
 	public String getMessageSendCode() {
-		//new Message(<sender>, <target>, <message name>, <arguments>, <input token>, <output token>);
+		//new TransactorMessage(<sender>, <target>, <worldview> <message name>, <arguments>, <input token>, <output token>);
 		String code = "";
 
-		code = "Message message = new Message( self, ";
+		code = "TransactorMessage message = new TransactorMessage( self, ";
 
 		if (children[0] instanceof Value) {
 			String methodName = getToken(1).image;
 			code += getChild(0).getJavaCode() + ", ";
-
-                        if (SalsaCompiler.symbolTable.getSymbolType(methodName) != null &&
+			code += "this.wv, ";
+            if (SalsaCompiler.symbolTable.getSymbolType(methodName) != null &&
 			    SalsaCompiler.symbolTable.getSymbolType(methodName).equals("token") ) {
 				code += methodName + "";
 			} else {
@@ -72,8 +72,8 @@ public class MessageSend extends SimpleNode {
 		} else {
 			String methodName = getToken(0).image;
 			code += "self, ";
-
-                        if (SalsaCompiler.symbolTable.getSymbolType(methodName) != null &&
+			code += "this.wv, ";
+            if (SalsaCompiler.symbolTable.getSymbolType(methodName) != null &&
 			    SalsaCompiler.symbolTable.getSymbolType(methodName).equals("token") ) {
 				code += methodName + "";
 			} else {
