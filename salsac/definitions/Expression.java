@@ -16,7 +16,6 @@ package salsac.definitions;
 import salsac.*;
 import salsac.SalsaParserTreeConstants;
 
-import salsa.language.Actor;
 
 import java.util.Vector;
 

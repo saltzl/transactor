@@ -8,3 +8,4 @@ SalsaParserTokenManager.java
 Token.java
 TokenMgrError.java
 *.jj
+*.class

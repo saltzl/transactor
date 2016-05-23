@@ -9,7 +9,7 @@ import java.io.FileWriter;
 public class DefinitionGenerator {
 	public static void createFile(String className, String production) {
 		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter("./definitions/" + className + ".java"));
+			BufferedWriter out = new BufferedWriter(new FileWriter("salsac/definitions/" + className + ".java"));
 			String output = "/*\n";
 			output += "\t" + production + "\n";
 			output += "*/\n";

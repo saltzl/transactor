@@ -46,7 +46,7 @@ public class TransactorMessage extends Message {
 	public TransactorMessage(ActorReference source, Object target, Worldview msg_wv, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken, boolean requireAck, boolean isCallByValue) {
 		super(source, target, methodName,arguments,synchronizationToken,continuationToken,requireAck,isCallByValue);
 		this.worldview = msg_wv;
-		this.referenceSplitting();
+		this.worldviewSplit();
 	}
 
 	/**
@@ -77,34 +77,16 @@ public class TransactorMessage extends Message {
 		return description;
 	}
 
-    /*****
-     * GC code section:
-     * by WeiJen
-     *****/
-
     /*
-     *Reference Splitting changed to also split worldview
+     *Reference Splitting for worldviews
      *
      */
-    public void referenceSplitting() {
-    	byte[] serializedArguments;
+    public void worldviewSplit() {
     	byte[] serializedWorldView;
-    	if (arguments==null || arguments.length==0) {
-    		return;
-    	}
-    	if (this.methodName.equals("addActor") || this.methodName.equals("reloadTransactor")) {return;}
 
     	try {
     		ByteArrayOutputStream bos = new ByteArrayOutputStream();
     		ObjectOutputStream outStream = new ObjectOutputStream( bos);
-    		outStream.writeObject(arguments);
-    		outStream.flush();
-    		serializedArguments=bos.toByteArray();
-    		outStream.close();
-    		bos.close();
-
-    		bos = new ByteArrayOutputStream();
-    		outStream = new ObjectOutputStream(bos);
     		outStream.writeObject(worldview);
     		outStream.flush();
     		serializedWorldView = bos.toByteArray();
@@ -112,26 +94,17 @@ public class TransactorMessage extends Message {
     		bos.close();
 
     	}
-    	catch (Exception e) {System.err.println("Message Class, referenceSplitting() method: Error on serializing method arguments:"+e); return;}
+    	catch (Exception e) {System.err.println("Message Class, worldviewSplit() method: Error on serializing method arguments:"+e); return;}
 
     	try {
     		ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
-    		GCObjectInputStream inStream;
-    		inStream = new GCObjectInputStream(bis,GCObjectInputStream.MUTE_GC,source,target);
-    		arguments= (Object[]) inStream.readObject();
-    		inStream.close();
-    		bis.close();
-
-    		bis = new ByteArrayInputStream(serializedWorldView);
+    		ObjectInputStream inStream;
     		inStream = new ObjectInputStream(bis);
     		worldview= (Worldview) inStream.readObject();
     		inStream.close();
     		bis.close();
-
-    		refSummary=inStream.getRefSummary();
-    		hasActorReferenceArgs=(refSummary.size()>0);
     	}
-    	catch (Exception e) {System.err.println("Message Class, referenceSplitting() method:Error on deserializing method arguments:"+e); }
+    	catch (Exception e) {System.err.println("Message Class, worldviewSplit() method:Error on deserializing method arguments:"+e); }
     }
 
 

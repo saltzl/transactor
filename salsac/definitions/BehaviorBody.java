@@ -230,7 +230,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() + "\tcurrent.add(name);\n";
                 code += SalsaCompiler.getIndent() + "\tif (union.invalidates(wv.getHistMap(),current)){\n";
                 code += SalsaCompiler.getIndent() + "\t\tif(wv.getHistMap().get(name).isPersistent()){\n";
-                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );\n"
+                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tself.send(pass_msg);\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tthis.rollback(true);\n";
                 code += SalsaCompiler.getIndent() + "\t\t}else{\n";
