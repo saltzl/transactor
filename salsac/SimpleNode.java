@@ -154,7 +154,7 @@ public class SimpleNode implements Node {
 					n.dump(prefix + " ");
 				}
 			}
-		}
+		}		
 	}
 }
 

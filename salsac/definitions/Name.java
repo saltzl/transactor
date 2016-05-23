@@ -15,9 +15,14 @@ public class Name extends SimpleNode {
 
 	public String getChildCode() {
 		String code = "";
-		for (int i = 0; i < tokens.length; i++) {
-			code += getToken(i);
+		for (int i = 0; i < children.length; i++) {
+			code += getChild(i).getJavaCode();
+			if(i + 1 < children.length){
+				code += ".";
+			}
 		}
+		System.out.println(code);
+
 		return code;
 	}
 }

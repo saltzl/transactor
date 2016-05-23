@@ -134,10 +134,12 @@ TOKEN : {
 	| < CASE: "case" >
 	| < CATCH: "catch" >
 	| < CHAR: "char" >
+	| < CHECKPOINT: "checkpoint" >
 	| < CONST: "const" >
 	| < CONTINUE: "continue" >
 	| < CURRENTCONTINUATION: "currentContinuation" >
 	| < _DEFAULT: "default" >
+	| < DEPENDENT: "dependent" >
 	| < DO: "do" >
 	| < DOUBLE: "double" >
 	| < ELSE: "else" >
@@ -145,6 +147,7 @@ TOKEN : {
 	| < FALSE: "false" >
 	| < FINAL: "final" >
 	| < FINALLY: "finally" >
+	| < FIRST: "first" >
 	| < FLOAT: "float" >
 	| < FOR: "for" >
 	| < GOTO: "goto" >
@@ -164,11 +167,13 @@ TOKEN : {
 	| < PROTECTED: "protected" >
 	| < PUBLIC: "public" >
 	| < RETURN: "return" >
+	| < ROLLBACK: "rollback" >
 	| < SHORT: "short" >
+	| < STABILIZE: "stabilize" >
 	| < STATIC: "static" >
 	| < SUPER: "super" >
-	| < SWITCH: "switch" >
 	| < SYNCHRONIZED: "synchronized" >
+	| < SWITCH: "switch" >
 	| < THIS: "this" >
 	| < THROW: "throw" >
 	| < THROWS: "throws" >
@@ -179,6 +184,7 @@ TOKEN : {
 	| < VOID: "void" >
 	| < VOLATILE: "volatile" >
 	| < WHILE: "while" >
+
 }
 
 /* LITERALS */
@@ -345,8 +351,12 @@ CompilationUnit CompilationUnit() : {} {
 	{ return (CompilationUnit) jjtThis; }
 }
 
+void Ident() : {Token t;} {
+	t = <IDENTIFIER> {jjtThis.addToken(t);}
+}
+
 void Name() : {} {
-	<IDENTIFIER> (LOOKAHEAD(2) "." <IDENTIFIER>)*
+	Ident() (LOOKAHEAD(2) "." Ident())*
 }
  
 void ModuleDeclaration() : {} {
@@ -354,7 +364,7 @@ void ModuleDeclaration() : {} {
 }
 
 void ImportDeclaration() : {} {
-	"import" <IDENTIFIER> (LOOKAHEAD(2) "." (<IDENTIFIER> | "*") )* ";"
+	"import" Ident() (LOOKAHEAD(2) "." (Ident() | "*") )* ";"
 }
  
  
@@ -363,7 +373,7 @@ void BehaviorDeclarationAttributes() : {} {
 }
  
 void InterfaceDeclaration() : {} {
-	"interface" <IDENTIFIER> ["extends" Name()] InterfaceBody()
+	"interface" Ident() ["extends" Name()] InterfaceBody()
 }
 
 void InterfaceBody() : {} {
@@ -376,15 +386,15 @@ void InterfaceBody() : {} {
 }
 
 void BehaviorDeclaration() : {} {
-	"behavior" <IDENTIFIER> ["extends" Name()] ["implements" Name() ("," Name())*] BehaviorBody()
+	"behavior" Ident() ["extends" Name()] ["implements" Name() ("," Name())*] BehaviorBody()
 }
 
 void MethodLookahead() : {} {
-	MethodAttributes() ( Type() | "void" ) <IDENTIFIER> FormalParameters() ["throws" Exceptions()]
+	MethodAttributes() ( Type() | "void" ) Ident() FormalParameters() ["throws" Exceptions()]
 }
 
 void ConstructorLookahead() : {} {
-	MethodAttributes() <IDENTIFIER> FormalParameters() ["throws" Exceptions()] "{"
+	MethodAttributes() Ident() FormalParameters() ["throws" Exceptions()] "{"
 }
 
 void BehaviorBody() : {} {
@@ -432,7 +442,7 @@ void Type() : {} {
 
 
 void VariableDeclaration() : {} {
-	<IDENTIFIER> ("[" "]")* ["=" (Expression() | ArrayInitializer())]
+	Ident() ("[" "]")* ["=" (Expression() | ArrayInitializer())]
 }
 
 void ArrayInitializer() : {} {
@@ -464,11 +474,12 @@ void Suffix() : {} {
 }
 
 void Variable() : {} {
-	[LOOKAHEAD( "(" Type() ")" (Literal() | Name() | "this" | "super" | AllocationExpression() | "(" Expression() ")")) "(" Type() ")"] 
+	[LOOKAHEAD( "(" Type() ")" (Literal() | Name() | "this" | "super" | "dependent" | AllocationExpression() | "(" Expression() ")")) "(" Type() ")"] 
 	(
 		  Literal()
 		| Name() 
 		| "this" 
+		| "dependent"
 		| "super"
 		| AllocationExpression()
 		| "(" Expression() ")"
@@ -479,7 +490,7 @@ void PrimarySuffix() : {} {
 	  LOOKAHEAD(2) "." "this"
 	| LOOKAHEAD(2) "." AllocationExpression()
 	| "[" Expression() "]"
-	| LOOKAHEAD(2) "." <IDENTIFIER>
+	| LOOKAHEAD(2) "." Ident()
 	| Arguments()
 }
 
@@ -545,7 +556,7 @@ void ArrayDimsAndInits() : {} {
 }
 
 void FormalParameters() : {} {
-	"(" [ ["final"] Type() <IDENTIFIER> ( "[" "]" )* ( "," ["final"] Type() <IDENTIFIER> ( "[" "]" )* )* ] ")"
+	"(" [ ["final"] Type() Ident() ( "[" "]" )* ( "," ["final"] Type() Ident() ( "[" "]" )* )* ] ")"
 }
 
 void ExplicitConstructorInvocation() : {} {
@@ -553,7 +564,7 @@ void ExplicitConstructorInvocation() : {} {
 }
 
 void ConstructorDeclaration() : {} {
-	MethodAttributes() <IDENTIFIER> FormalParameters() ["throws" Exceptions()] "{" 
+	MethodAttributes() Ident() FormalParameters() ["throws" Exceptions()] "{" 
 		[LOOKAHEAD( ExplicitConstructorInvocation() ) ExplicitConstructorInvocation()] ( Statement() )* 
 	"}"
 }
@@ -563,7 +574,7 @@ void ConstructorAttributes() : {} {
 }
 
 void MethodDeclaration() : {} {
-	MethodAttributes() (Type() | "void") <IDENTIFIER> FormalParameters() ["throws" Exceptions()] Block()
+	MethodAttributes() (Type() | "void") Ident() FormalParameters() ["throws" Exceptions()] Block()
 }
 
 void MethodAttributes() : {} {
@@ -577,7 +588,7 @@ void Exceptions() : {} {
 void Statement() : {} {
 	  LOOKAHEAD( ContinuationStatement() ) ContinuationStatement()
 	| LOOKAHEAD( TokenDeclarationStatement() ) TokenDeclarationStatement()
-	| LOOKAHEAD( ["final"] Type() <IDENTIFIER> ) LocalVariableDeclaration() ";"
+	| LOOKAHEAD( ["final"] Type() Ident() ) LocalVariableDeclaration() ";"
 	| Block()
 	| EmptyStatement()
 	| LOOKAHEAD(3) StatementExpression() ";"
@@ -593,6 +604,9 @@ void Statement() : {} {
 	| ReturnStatement()
 	| ThrowStatement()
 	| TryStatement()
+	| LOOKAHEAD( "checkpoint" )				CheckpointStatement()
+	| LOOKAHEAD( "stabilize" )				StabilizeStatement()
+	| LOOKAHEAD( "rollback" )				RollbackStatement()
 	| LOOKAHEAD(MethodLookahead()) MethodDeclaration()
 	| NestedBehaviorDeclaration()
 }
@@ -614,7 +628,7 @@ void StatementExpression() : {} {
 }
 
 void LabeledStatement() : {} {
-	<IDENTIFIER> ":" Statement()
+	Ident() ":" Statement()
 }
 
 void SwitchStatement() : {} {
@@ -640,7 +654,7 @@ void DoStatement() : {} {
 
 
 void ForInit() : {} {
-	[LOOKAHEAD( ["final"] Type() <IDENTIFIER>) LocalVariableDeclaration() | (StatementExpression() ("," StatementExpression())*)]
+	[LOOKAHEAD( ["final"] Type() Ident()) LocalVariableDeclaration() | (StatementExpression() ("," StatementExpression())*)]
 }
 
 void ForCondition() : {} {
@@ -656,11 +670,11 @@ void ForStatement() : {} {
 }
 
 void BreakStatement() : {} {
-	"break" [<IDENTIFIER>] ";"
+	"break" [Ident()] ";"
 }
 
 void ContinueStatement() : {} {
-	"continue" [<IDENTIFIER>] ";"
+	"continue" [Ident()] ";"
 }
 
 void ReturnStatement() : {} {
@@ -676,10 +690,20 @@ void SynchronizedStatement() : {} {
 }
 
 void TryStatement() : {} {
-	"try" Block() ("catch" "(" ["final"] Type() <IDENTIFIER> ")" Block())*  ["finally" Block()]
+	"try" Block() ("catch" "(" ["final"] Type() Ident() ")" Block())*  ["finally" Block()]
 }
 
+void CheckpointStatement() : {} {
+	"checkpoint;"
+}
 
+void StabilizeStatement() : {} {
+	"stabilize;"
+}
+
+void RollbackStatement() : {} {
+	"rollback;"
+}
 
 
 void ContinuationStatement() : {} {
@@ -696,15 +720,15 @@ void JoinBlock() : {} {
 }
 
 void NamedTokenStatement() : {} {
-	(<IDENTIFIER> | "token" <IDENTIFIER>) "="
+	(Ident() | "token" Ident()) "="
 }
 
 void MessageSend() : {} {
-	[LOOKAHEAD( Value() "<-" ) Value() "<-"] <IDENTIFIER> MessageArguments() [":" MessageProperty()]
+	[LOOKAHEAD( Value() "<-" ) Value() "<-"] Ident() MessageArguments() [":" MessageProperty()]
 }
 
 void MessageProperty() : {} {
-	<IDENTIFIER> [Arguments()]
+	Ident() [Arguments()]
 }
 
 void MessageArguments() : {} {
@@ -712,5 +736,5 @@ void MessageArguments() : {} {
 }
 
 void TokenDeclarationStatement() : {} {
-	"token" <IDENTIFIER> "=" Expression() ";"
+	"token" Ident() "=" Expression() ";"
 }
