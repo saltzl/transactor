@@ -17,14 +17,12 @@ public class ImportDeclaration extends SimpleNode {
 
 	public String getChildCode() {
 		String code = "";
-		for (int i = 0; i < children.length; i++) {
-			code += getChild(i).getJavaCode();
-			if(i + 1 < children.length){
-				code += ".";
-			}
+		
+		for (int i = 1; i < tokens.length-1; i++) {
+			code += getToken(i);
 		}
-
-		if (code.lastIndexOf('*') == code.length() - 1) {
+		
+		if (getToken(tokens.length-2).image.equals("*")) {
 			SalsaCompiler.addPackage( code.substring(0, code.length()-3) );
 		} else {
 			SalsaCompiler.addImport( code );

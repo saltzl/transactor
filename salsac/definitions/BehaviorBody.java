@@ -559,7 +559,29 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 			code += SalsaCompiler.getIndent() + "public void construct() {}\n\n";
 		}
 
-		code += SalsaCompiler.getIndent() + "public void process(Message message) {\n";
+               code += SalsaCompiler.getIndent() + "public void process(TransactorMessage message) {\n";
+
+
+                code += SalsaCompiler.getIndent() + "\tWorldview union = wv.union(message.worldview);\n";
+                code += SalsaCompiler.getIndent() + "\tHashSet current = new HashSet();\n";
+                code += SalsaCompiler.getIndent() + "\tcurrent.add(name);\n";
+                code += SalsaCompiler.getIndent() + "\tif (union.invalidates(wv.getHistMap(),current)){\n";
+                code += SalsaCompiler.getIndent() + "\t\tif(wv.getHistMap().get(name).isPersistent()){\n";
+                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );\n";
+                code += SalsaCompiler.getIndent() + "\t\t\tself.send(pass_msg);\n";
+                code += SalsaCompiler.getIndent() + "\t\t\tthis.rollback(true);\n";
+                code += SalsaCompiler.getIndent() + "\t\t}else{\n";
+                code += SalsaCompiler.getIndent() + "\t\t\tthis.destroy();\n";
+                code += SalsaCompiler.getIndent() + "\t\t};\n";
+                code += SalsaCompiler.getIndent() + "\t\treturn;\n";
+                code += SalsaCompiler.getIndent() + "\t}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {\n";
+                code += SalsaCompiler.getIndent() + "\t\tresponseAck(msg);\n";
+                code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
+                code += SalsaCompiler.getIndent() + "\t\twv.setRootSet(newHashSet());\n";
+                code += SalsaCompiler.getIndent() + "\t\treturn;";
+                code += SalsaCompiler.getIndent() + "\t}else{\n";
+                code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
+                code += SalsaCompiler.getIndent() + "\t}\n";
 		code += SalsaCompiler.getIndent() + "\tMethod[] matches = getMatches(message.getMethodName());\n";
 		code += SalsaCompiler.getIndent() + "\tObject returnValue = null;\n";
 		code += SalsaCompiler.getIndent() + "\tException exception = null;\n\n";
