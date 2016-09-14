@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -34,7 +34,7 @@ import salsa.resources.ActorService;
 import java.util.*;
 import java.io.*;
 
-public class FourHostMatrixMul extends UniversalActor  {
+public class FourHostMatrixMul extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -180,7 +180,7 @@ public class FourHostMatrixMul extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public FourHostMatrixMul self;
 		public void updateSelf(ActorReference actorReference) {
 			((FourHostMatrixMul)actorReference).setUAL(getUAL());
@@ -189,14 +189,6 @@ public class FourHostMatrixMul extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -209,7 +201,26 @@ public class FourHostMatrixMul extends UniversalActor  {
 			addMethodsForClasses();
 		}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -236,6 +247,8 @@ public class FourHostMatrixMul extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -298,7 +311,7 @@ public class FourHostMatrixMul extends UniversalActor  {
 					// ((FourHostMatrixMul)self)<-show(data)
 					{
 						Object _arguments[] = { data };
-						Message message = new Message( self, ((FourHostMatrixMul)self), "show", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, ((FourHostMatrixMul)self), this.wv, "show", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -369,13 +382,13 @@ continue;					}
 						// (mm[i%N])<-mul(rowdata, B)
 						{
 							Object _arguments[] = { rowdata, B };
-							Message message = new Message( self, (mm[i%N]), "mul", _arguments, null, token_4_0 );
+							TransactorMessage message = new TransactorMessage( self, (mm[i%N]), this.wv, "mul", _arguments, null, token_4_0 );
 							__messages.add( message );
 						}
 						// setData(token, new Integer(i))
 						{
 							Object _arguments[] = { token_4_0, new Integer(i) };
-							Message message = new Message( self, self, "setData", _arguments, token_4_0, null );
+							TransactorMessage message = new TransactorMessage( self, self, this.wv, "setData", _arguments, token_4_0, null );
 							__messages.add( message );
 						}
 					}

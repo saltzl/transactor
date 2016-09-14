@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class Continuation extends UniversalActor  {
+public class Continuation extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -178,7 +178,7 @@ public class Continuation extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public Continuation self;
 		public void updateSelf(ActorReference actorReference) {
 			((Continuation)actorReference).setUAL(getUAL());
@@ -187,14 +187,6 @@ public class Continuation extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -209,7 +201,26 @@ public class Continuation extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -236,6 +247,8 @@ public class Continuation extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -284,7 +297,7 @@ public class Continuation extends UniversalActor  {
 				// standardOutput<-print(n+" ")
 				{
 					Object _arguments[] = { n+" " };
-					Message message = new Message( self, standardOutput, "print", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "print", _arguments, null, null );
 					__messages.add( message );
 				}
 			}
@@ -311,103 +324,103 @@ public class Continuation extends UniversalActor  {
 				// i(0)
 				{
 					Object _arguments[] = { new Integer(0) };
-					Message message = new Message( self, self, "i", _arguments, null, token_2_0 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "i", _arguments, null, token_2_0 );
 					__messages.add( message );
 				}
 				// p(token)
 				{
 					Object _arguments[] = { token_2_0 };
-					Message message = new Message( self, self, "p", _arguments, token_2_0, token_2_1 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "p", _arguments, token_2_0, token_2_1 );
 					__messages.add( message );
 				}
 				// d(token)
 				{
 					Object _arguments[] = { token_2_1 };
-					Message message = new Message( self, self, "d", _arguments, token_2_1, token_2_2 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "d", _arguments, token_2_1, token_2_2 );
 					__messages.add( message );
 				}
 				// p(token)
 				{
 					Object _arguments[] = { token_2_2 };
-					Message message = new Message( self, self, "p", _arguments, token_2_2, token_2_3 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "p", _arguments, token_2_2, token_2_3 );
 					__messages.add( message );
 				}
 				// i(token)
 				{
 					Object _arguments[] = { token_2_3 };
-					Message message = new Message( self, self, "i", _arguments, token_2_3, token_2_4 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "i", _arguments, token_2_3, token_2_4 );
 					__messages.add( message );
 				}
 				// p(token)
 				{
 					Object _arguments[] = { token_2_4 };
-					Message message = new Message( self, self, "p", _arguments, token_2_4, token_2_5 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "p", _arguments, token_2_4, token_2_5 );
 					__messages.add( message );
 				}
 				// d(token)
 				{
 					Object _arguments[] = { token_2_5 };
-					Message message = new Message( self, self, "d", _arguments, token_2_5, token_2_6 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "d", _arguments, token_2_5, token_2_6 );
 					__messages.add( message );
 				}
 				// p(token)
 				{
 					Object _arguments[] = { token_2_6 };
-					Message message = new Message( self, self, "p", _arguments, token_2_6, token_2_7 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "p", _arguments, token_2_6, token_2_7 );
 					__messages.add( message );
 				}
 				// i(token)
 				{
 					Object _arguments[] = { token_2_7 };
-					Message message = new Message( self, self, "i", _arguments, token_2_7, token_2_8 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "i", _arguments, token_2_7, token_2_8 );
 					__messages.add( message );
 				}
 				// p(token)
 				{
 					Object _arguments[] = { token_2_8 };
-					Message message = new Message( self, self, "p", _arguments, token_2_8, token_2_9 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "p", _arguments, token_2_8, token_2_9 );
 					__messages.add( message );
 				}
 				// m(token, 10)
 				{
 					Object _arguments[] = { token_2_9, new Integer(10) };
-					Message message = new Message( self, self, "m", _arguments, token_2_9, token_2_10 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "m", _arguments, token_2_9, token_2_10 );
 					__messages.add( message );
 				}
 				// p(token)
 				{
 					Object _arguments[] = { token_2_10 };
-					Message message = new Message( self, self, "p", _arguments, token_2_10, token_2_11 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "p", _arguments, token_2_10, token_2_11 );
 					__messages.add( message );
 				}
 				// a(3, token)
 				{
 					Object _arguments[] = { new Integer(3), token_2_11 };
-					Message message = new Message( self, self, "a", _arguments, token_2_11, token_2_12 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "a", _arguments, token_2_11, token_2_12 );
 					__messages.add( message );
 				}
 				// p(token)
 				{
 					Object _arguments[] = { token_2_12 };
-					Message message = new Message( self, self, "p", _arguments, token_2_12, token_2_13 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "p", _arguments, token_2_12, token_2_13 );
 					__messages.add( message );
 				}
 				// s(token, 1)
 				{
 					Object _arguments[] = { token_2_13, new Integer(1) };
-					Message message = new Message( self, self, "s", _arguments, token_2_13, token_2_14 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "s", _arguments, token_2_13, token_2_14 );
 					__messages.add( message );
 				}
 				// p(token)
 				{
 					Object _arguments[] = { token_2_14 };
-					Message message = new Message( self, self, "p", _arguments, token_2_14, token_2_15 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "p", _arguments, token_2_14, token_2_15 );
 					__messages.add( message );
 				}
 				// standardOutput<-print("hi")
 				{
 					Object _arguments[] = { "hi" };
-					Message message = new Message( self, standardOutput, "print", _arguments, token_2_15, null );
+					TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "print", _arguments, token_2_15, null );
 					__messages.add( message );
 				}
 			}

@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class NoSuchMessage extends UniversalActor  {
+public class NoSuchMessage extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -178,7 +178,7 @@ public class NoSuchMessage extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public NoSuchMessage self;
 		public void updateSelf(ActorReference actorReference) {
 			((NoSuchMessage)actorReference).setUAL(getUAL());
@@ -187,14 +187,6 @@ public class NoSuchMessage extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -209,7 +201,26 @@ public class NoSuchMessage extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -236,6 +247,8 @@ public class NoSuchMessage extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -269,7 +282,7 @@ public class NoSuchMessage extends UniversalActor  {
 				// ((NoSuchMessage)self)<-m()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, ((NoSuchMessage)self), "m", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, ((NoSuchMessage)self), this.wv, "m", _arguments, null, null );
 					__messages.add( message );
 				}
 			}

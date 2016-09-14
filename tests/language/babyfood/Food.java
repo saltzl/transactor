@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class Food extends UniversalActor  {
+public class Food extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -178,7 +178,7 @@ public class Food extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public Food self;
 		public void updateSelf(ActorReference actorReference) {
 			((Food)actorReference).setUAL(getUAL());
@@ -201,7 +201,26 @@ public class Food extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -228,6 +247,8 @@ public class Food extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");

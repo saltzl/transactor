@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -201,7 +201,26 @@ public class BabyFood extends Food {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -228,6 +247,8 @@ public class BabyFood extends Food {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -263,19 +284,19 @@ public class BabyFood extends Food {
 				// toString()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, self, "toString", _arguments, null, token_2_0 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "toString", _arguments, null, token_2_0 );
 					__messages.add( message );
 				}
 				// combineString("mashes ", token)
 				{
 					Object _arguments[] = { "mashes ", token_2_0 };
-					Message message = new Message( self, self, "combineString", _arguments, token_2_0, token_2_1 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "combineString", _arguments, token_2_0, token_2_1 );
 					__messages.add( message );
 				}
 				// standardOutput<-println(token)
 				{
 					Object _arguments[] = { token_2_1 };
-					Message message = new Message( self, standardOutput, "println", _arguments, token_2_1, null );
+					TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, token_2_1, null );
 					__messages.add( message );
 				}
 			}

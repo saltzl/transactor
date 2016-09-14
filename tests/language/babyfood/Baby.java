@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -189,14 +189,6 @@ public class Baby extends Man {
 			self.activateGC();
 		}
 
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
-		}
-
 		public State() {
 			this(null, null);
 		}
@@ -209,7 +201,26 @@ public class Baby extends Man {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -236,6 +247,8 @@ public class Baby extends Man {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -269,7 +282,7 @@ public class Baby extends Man {
 				// standardOutput<-println("Sorry, Baby can't eat Food!")
 				{
 					Object _arguments[] = { "Sorry, Baby can't eat Food!" };
-					Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 					__messages.add( message );
 				}
 			}
@@ -279,7 +292,7 @@ public class Baby extends Man {
 				// bf<-mash()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, bf, "mash", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, bf, this.wv, "mash", _arguments, null, null );
 					__messages.add( message );
 				}
 			}
@@ -297,7 +310,7 @@ public class Baby extends Man {
 				// m<-eat(f)
 				{
 					Object _arguments[] = { f };
-					Message message = new Message( self, m, "eat", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, m, this.wv, "eat", _arguments, null, null );
 					__messages.add( message );
 				}
 			}
@@ -306,7 +319,7 @@ public class Baby extends Man {
 				// m<-eat(f)
 				{
 					Object _arguments[] = { f };
-					Message message = new Message( self, m, "eat", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, m, this.wv, "eat", _arguments, null, null );
 					__messages.add( message );
 				}
 			}
@@ -315,7 +328,7 @@ public class Baby extends Man {
 				// m<-eat(f)
 				{
 					Object _arguments[] = { f };
-					Message message = new Message( self, m, "eat", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, m, this.wv, "eat", _arguments, null, null );
 					__messages.add( message );
 				}
 			}
@@ -323,7 +336,7 @@ public class Baby extends Man {
 				// b<-eat(f)
 				{
 					Object _arguments[] = { f };
-					Message message = new Message( self, b, "eat", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, b, this.wv, "eat", _arguments, null, null );
 					__messages.add( message );
 				}
 			}
@@ -331,7 +344,7 @@ public class Baby extends Man {
 				// b<-eat(bf)
 				{
 					Object _arguments[] = { bf };
-					Message message = new Message( self, b, "eat", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, b, this.wv, "eat", _arguments, null, null );
 					__messages.add( message );
 				}
 			}

@@ -1,5 +1,0 @@
-module examples.multicast;
-
-behavior SimpleActor{
-    void m(){}
-}

@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -34,7 +34,7 @@ import salsa.resources.ActorService;
 import java.io.*;
 import java.util.*;
 
-public class Garbage extends UniversalActor  {
+public class Garbage extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -186,7 +186,7 @@ public class Garbage extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public Garbage self;
 		public void updateSelf(ActorReference actorReference) {
 			((Garbage)actorReference).setUAL(getUAL());
@@ -195,14 +195,6 @@ public class Garbage extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -217,7 +209,26 @@ public class Garbage extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -244,6 +255,8 @@ public class Garbage extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -291,7 +304,7 @@ public class Garbage extends UniversalActor  {
 						// ((Garbage)self)<-migrate((String)theaters.get(i%(theaters.size())))
 						{
 							Object _arguments[] = { (String)theaters.get(i%(theaters.size())) };
-							Message message = new Message( self, ((Garbage)self), "migrate", _arguments, null, token_2_0 );
+							TransactorMessage message = new TransactorMessage( self, ((Garbage)self), this.wv, "migrate", _arguments, null, token_2_0 );
 							__messages.add( message );
 						}
 					}
@@ -300,7 +313,7 @@ public class Garbage extends UniversalActor  {
 				// dummy()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, self, "dummy", _arguments, token_2_0, currentMessage.getContinuationToken() );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "dummy", _arguments, token_2_0, currentMessage.getContinuationToken() );
 					__messages.add( message );
 				}
 				throw new CurrentContinuationException();
@@ -317,7 +330,7 @@ public class Garbage extends UniversalActor  {
 				// prev<-passing()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, prev, "passing", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, prev, this.wv, "passing", _arguments, null, null );
 					__messages.add( message );
 				}
 			}
@@ -348,7 +361,7 @@ public class Garbage extends UniversalActor  {
 						// standardOutput<-println("[error] Can't open the file "+theatersFile+" for reading.")
 						{
 							Object _arguments[] = { "[error] Can't open the file "+theatersFile+" for reading." };
-							Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -364,19 +377,19 @@ public class Garbage extends UniversalActor  {
 					// actors[0]<-set(actors[actors.length-1])
 					{
 						Object _arguments[] = { actors[actors.length-1] };
-						Message message = new Message( self, actors[0], "set", _arguments, null, token_3_0 );
+						TransactorMessage message = new TransactorMessage( self, actors[0], this.wv, "set", _arguments, null, token_3_0 );
 						__messages.add( message );
 					}
 					// migration(actors, theaters)
 					{
 						Object _arguments[] = { actors, theaters };
-						Message message = new Message( self, self, "migration", _arguments, token_3_0, token_3_1 );
+						TransactorMessage message = new TransactorMessage( self, self, this.wv, "migration", _arguments, token_3_0, token_3_1 );
 						__messages.add( message );
 					}
 					// standardOutput<-println("Finished!")
 					{
 						Object _arguments[] = { "Finished!" };
-						Message message = new Message( self, standardOutput, "println", _arguments, token_3_1, null );
+						TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, token_3_1, null );
 						__messages.add( message );
 					}
 				}
@@ -396,7 +409,7 @@ public class Garbage extends UniversalActor  {
 						// actors[i]<-migrate((String)theaters.get(i%(theaters.size())))
 						{
 							Object _arguments[] = { (String)theaters.get(i%(theaters.size())) };
-							Message message = new Message( self, actors[i], "migrate", _arguments, null, token_2_0 );
+							TransactorMessage message = new TransactorMessage( self, actors[i], this.wv, "migrate", _arguments, null, token_2_0 );
 							__messages.add( message );
 						}
 					}
@@ -405,7 +418,7 @@ public class Garbage extends UniversalActor  {
 				// dummy()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, self, "dummy", _arguments, token_2_0, currentMessage.getContinuationToken() );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "dummy", _arguments, token_2_0, currentMessage.getContinuationToken() );
 					__messages.add( message );
 				}
 				throw new CurrentContinuationException();

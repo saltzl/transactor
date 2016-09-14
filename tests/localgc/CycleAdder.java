@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class CycleAdder extends UniversalActor  {
+public class CycleAdder extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -184,7 +184,7 @@ public class CycleAdder extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public CycleAdder self;
 		public void updateSelf(ActorReference actorReference) {
 			((CycleAdder)actorReference).setUAL(getUAL());
@@ -193,14 +193,6 @@ public class CycleAdder extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -215,7 +207,26 @@ public class CycleAdder extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -242,6 +253,8 @@ public class CycleAdder extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -287,7 +300,7 @@ public class CycleAdder extends UniversalActor  {
 					// fp<-add(0)
 					{
 						Object _arguments[] = { new Integer(0) };
-						Message message = new Message( self, fp, "add", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, fp, this.wv, "add", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -299,7 +312,7 @@ public class CycleAdder extends UniversalActor  {
 					// ca<-compute(next)
 					{
 						Object _arguments[] = { next };
-						Message message = new Message( self, ca, "compute", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, ca, this.wv, "compute", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -314,7 +327,7 @@ public class CycleAdder extends UniversalActor  {
 					// fp<-add(new Integer(this.n+num.intValue()))
 					{
 						Object _arguments[] = { new Integer(this.n+num.intValue()) };
-						Message message = new Message( self, fp, "add", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, fp, this.wv, "add", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -330,7 +343,7 @@ public class CycleAdder extends UniversalActor  {
 					// standardError<-print("Parsing arguments error!\n")
 					{
 						Object _arguments[] = { "Parsing arguments error!\n" };
-						Message message = new Message( self, standardError, "print", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, standardError, this.wv, "print", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -342,7 +355,7 @@ public class CycleAdder extends UniversalActor  {
 					// compute(((CycleAdder)self))
 					{
 						Object _arguments[] = { ((CycleAdder)self) };
-						Message message = new Message( self, self, "compute", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, self, this.wv, "compute", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -352,7 +365,7 @@ public class CycleAdder extends UniversalActor  {
 					// standardOutput<-println(""+targetN)
 					{
 						Object _arguments[] = { ""+targetN };
-						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 						__messages.add( message );
 					}
 				}

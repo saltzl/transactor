@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class FourHostQueens extends UniversalActor  {
+public class FourHostQueens extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -184,7 +184,7 @@ public class FourHostQueens extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public FourHostQueens self;
 		public void updateSelf(ActorReference actorReference) {
 			((FourHostQueens)actorReference).setUAL(getUAL());
@@ -193,14 +193,6 @@ public class FourHostQueens extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -215,7 +207,26 @@ public class FourHostQueens extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -242,6 +253,8 @@ public class FourHostQueens extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -287,7 +300,7 @@ public class FourHostQueens extends UniversalActor  {
 					// ((FourHostQueens)self)<-show(new Integer(COUNT))
 					{
 						Object _arguments[] = { new Integer(COUNT) };
-						Message message = new Message( self, ((FourHostQueens)self), "show", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, ((FourHostQueens)self), this.wv, "show", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -327,19 +340,19 @@ public class FourHostQueens extends UniversalActor  {
 						// ((FourHostQueens)self)<-compute(0, 0, 0, 0)
 						{
 							Object _arguments[] = { new Integer(0), new Integer(0), new Integer(0), new Integer(0) };
-							Message message = new Message( self, ((FourHostQueens)self), "compute", _arguments, null, token_4_0 );
+							TransactorMessage message = new TransactorMessage( self, ((FourHostQueens)self), this.wv, "compute", _arguments, null, token_4_0 );
 							__messages.add( message );
 						}
 						// ((FourHostQueens)self)<-getCount()
 						{
 							Object _arguments[] = {  };
-							Message message = new Message( self, ((FourHostQueens)self), "getCount", _arguments, token_4_0, token_4_1 );
+							TransactorMessage message = new TransactorMessage( self, ((FourHostQueens)self), this.wv, "getCount", _arguments, token_4_0, token_4_1 );
 							__messages.add( message );
 						}
 						// ((FourHostQueens)self)<-show(token)
 						{
 							Object _arguments[] = { token_4_1 };
-							Message message = new Message( self, ((FourHostQueens)self), "show", _arguments, token_4_1, null );
+							TransactorMessage message = new TransactorMessage( self, ((FourHostQueens)self), this.wv, "show", _arguments, token_4_1, null );
 							__messages.add( message );
 						}
 					}
@@ -371,19 +384,19 @@ public class FourHostQueens extends UniversalActor  {
 								// nq<-Backtrack(new Integer(2), new Integer((jleft|bit)<<1), new Integer(jdown|bit), new Integer((jright|bit)>>1))
 								{
 									Object _arguments[] = { new Integer(2), new Integer((jleft|bit)<<1), new Integer(jdown|bit), new Integer((jright|bit)>>1) };
-									Message message = new Message( self, nq, "Backtrack", _arguments, null, token_6_0 );
+									TransactorMessage message = new TransactorMessage( self, nq, this.wv, "Backtrack", _arguments, null, token_6_0 );
 									__messages.add( message );
 								}
 								// nq<-getCount()
 								{
 									Object _arguments[] = {  };
-									Message message = new Message( self, nq, "getCount", _arguments, token_6_0, token_6_1 );
+									TransactorMessage message = new TransactorMessage( self, nq, this.wv, "getCount", _arguments, token_6_0, token_6_1 );
 									__messages.add( message );
 								}
 								// add(token)
 								{
 									Object _arguments[] = { token_6_1 };
-									Message message = new Message( self, self, "add", _arguments, token_6_1, null );
+									TransactorMessage message = new TransactorMessage( self, self, this.wv, "add", _arguments, token_6_1, null );
 									__messages.add( message );
 								}
 							}

@@ -61,7 +61,7 @@ public class Transactor extends UniversalActor  {
 		return this;
 	}
 */
-	public class State extends UniversalActor .State {
+	public class State extends UniversalActor.State {
 		public Transactor self;
 		public void updateSelf(ActorReference actorReference) {}
 

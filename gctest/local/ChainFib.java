@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class ChainFib extends UniversalActor  {
+public class ChainFib extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -184,7 +184,7 @@ public class ChainFib extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public ChainFib self;
 		public void updateSelf(ActorReference actorReference) {
 			((ChainFib)actorReference).setUAL(getUAL());
@@ -193,14 +193,6 @@ public class ChainFib extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -215,7 +207,26 @@ public class ChainFib extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -242,6 +253,8 @@ public class ChainFib extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -303,7 +316,7 @@ public class ChainFib extends UniversalActor  {
 						// standardOutput<-println(""+currentSum)
 						{
 							Object _arguments[] = { ""+currentSum };
-							Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -314,7 +327,7 @@ public class ChainFib extends UniversalActor  {
 							// fp<-addSum(new Integer(currentSum))
 							{
 								Object _arguments[] = { new Integer(currentSum) };
-								Message message = new Message( self, fp, "addSum", _arguments, null, null );
+								TransactorMessage message = new TransactorMessage( self, fp, this.wv, "addSum", _arguments, null, null );
 								__messages.add( message );
 							}
 						}
@@ -324,7 +337,7 @@ public class ChainFib extends UniversalActor  {
 							// fgp<-addSum(new Integer(currentSum))
 							{
 								Object _arguments[] = { new Integer(currentSum) };
-								Message message = new Message( self, fgp, "addSum", _arguments, null, null );
+								TransactorMessage message = new TransactorMessage( self, fgp, this.wv, "addSum", _arguments, null, null );
 								__messages.add( message );
 							}
 						}
@@ -342,7 +355,7 @@ public class ChainFib extends UniversalActor  {
 						// fp<-addSum(new Integer(0))
 						{
 							Object _arguments[] = { new Integer(0) };
-							Message message = new Message( self, fp, "addSum", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, fp, this.wv, "addSum", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -350,7 +363,7 @@ public class ChainFib extends UniversalActor  {
 						// fp<-addSum(new Integer(0))
 						{
 							Object _arguments[] = { new Integer(0) };
-							Message message = new Message( self, fp, "addSum", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, fp, this.wv, "addSum", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -360,7 +373,7 @@ public class ChainFib extends UniversalActor  {
 						// fgp<-addSum(new Integer(0))
 						{
 							Object _arguments[] = { new Integer(0) };
-							Message message = new Message( self, fgp, "addSum", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, fgp, this.wv, "addSum", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -372,7 +385,7 @@ public class ChainFib extends UniversalActor  {
 						// fp<-addSum(new Integer(1))
 						{
 							Object _arguments[] = { new Integer(1) };
-							Message message = new Message( self, fp, "addSum", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, fp, this.wv, "addSum", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -382,7 +395,7 @@ public class ChainFib extends UniversalActor  {
 						// fgp<-addSum(new Integer(1))
 						{
 							Object _arguments[] = { new Integer(1) };
-							Message message = new Message( self, fgp, "addSum", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, fgp, this.wv, "addSum", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -392,7 +405,7 @@ public class ChainFib extends UniversalActor  {
 						// fp<-addSum(new Integer(0))
 						{
 							Object _arguments[] = { new Integer(0) };
-							Message message = new Message( self, fp, "addSum", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, fp, this.wv, "addSum", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -402,7 +415,7 @@ public class ChainFib extends UniversalActor  {
 						// fp<-addSum(new Integer(1))
 						{
 							Object _arguments[] = { new Integer(1) };
-							Message message = new Message( self, fp, "addSum", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, fp, this.wv, "addSum", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -414,7 +427,7 @@ public class ChainFib extends UniversalActor  {
 					// fib1<-compute(((ChainFib)self), fp)
 					{
 						Object _arguments[] = { ((ChainFib)self), fp };
-						Message message = new Message( self, fib1, "compute", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, fib1, this.wv, "compute", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -425,7 +438,7 @@ public class ChainFib extends UniversalActor  {
 					// fib1<-compute(((ChainFib)self), null)
 					{
 						Object _arguments[] = { ((ChainFib)self), null };
-						Message message = new Message( self, fib1, "compute", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, fib1, this.wv, "compute", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -444,7 +457,7 @@ public class ChainFib extends UniversalActor  {
 					// standardError<-print("Parsing arguments error!\n")
 					{
 						Object _arguments[] = { "Parsing arguments error!\n" };
-						Message message = new Message( self, standardError, "print", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, standardError, this.wv, "print", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -457,7 +470,7 @@ public class ChainFib extends UniversalActor  {
 					// compute(null, null)
 					{
 						Object _arguments[] = { null, null };
-						Message message = new Message( self, self, "compute", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, self, this.wv, "compute", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -467,7 +480,7 @@ public class ChainFib extends UniversalActor  {
 					// standardOutput<-println(""+0)
 					{
 						Object _arguments[] = { ""+0 };
-						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -477,7 +490,7 @@ public class ChainFib extends UniversalActor  {
 					// standardOutput<-println(""+1)
 					{
 						Object _arguments[] = { ""+1 };
-						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 						__messages.add( message );
 					}
 				}

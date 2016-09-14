@@ -45,7 +45,7 @@ public class Message implements java.io.Serializable {
          *  needAck: to check if the message needs an Acknoweldgement
          *  If true is set, then the receiver must reply an ACK
          */
-        private boolean needAck;
+        protected boolean needAck;
         public void setNeedAck(boolean val) {needAck=val;}
         public boolean getNeedAck() {return needAck;}
 
@@ -54,15 +54,15 @@ public class Message implements java.io.Serializable {
 	 *	messageId is a unique message generated for each
 	 *	message and is used for token resolution.
 	 */
-	private String		messageId;
+	protected String		messageId;
 	public	String		getMessageId()		{ return messageId; }
 
 	/**
 	 *	Actor that the message is being sent from and
 	 *	Actor that the message is being sent to.
 	 */
-	private	WeakReference	source, target;
-	private boolean hasActorReferenceArgs=false;
+	protected	WeakReference	source, target;
+	protected boolean hasActorReferenceArgs=false;
 	public boolean getHasActorReferenceArgs() { return hasActorReferenceArgs; }
 
 	public Vector refSummary=null;
@@ -111,7 +111,7 @@ public class Message implements java.io.Serializable {
 	/**
 	 *	Name of the method that should be invoked.
 	 */
-	private	String 		methodName;
+	protected	String 		methodName;
 	public	String 		getMethodName()		{ return methodName; }
 
 	/**
@@ -119,24 +119,24 @@ public class Message implements java.io.Serializable {
 	 *	the arguments is the value of a yet to be evaluated token an instance of the
 	 *	Token class should be subituted for it until it is evaluated.
 	 */
-	private Object[] arguments;
+	protected Object[] arguments;
 
 	/**
 	 *	This is the number of tokens which must be received by the message before
 	 *	it can be processed, and a vector of those tokens.
 	 */
-	//private	int		requiredTokens = 0;
+	//protected	int		requiredTokens = 0;
 	//public	int		getRequiredTokens()	{ return requiredTokens; }
 
 	/**
 	 *	After this message has been processed, it's return token is passed
 	 *	to the joinDirector and the continuationToken, if they aren't null.
 	 */
-	//private int		joinPosition = 0;
+	//protected int		joinPosition = 0;
         //public  void            setJoinPosition(int pos) {joinPosition=pos;}
         //public  int             getJoinPosition() {return joinPosition;}
 
-	private Token		continuationToken = null;
+	protected Token		continuationToken = null;
 	public  void            setContinuationToken(Token cont) { continuationToken=cont; }
 	public	Token		getContinuationToken()	{ return continuationToken; }
 
@@ -147,8 +147,8 @@ public class Message implements java.io.Serializable {
 	 *	provide access to this information for use by the
 	 *	salsa.language package.
 	 */
-	private String		propertyName = null;
-	private Object[]	propertyParameters = null;
+	protected String		propertyName = null;
+	protected Object[]	propertyParameters = null;
 	public	String		getProperty() { return propertyName; }
 	public	Object[]	getPropertyParameters() { return propertyParameters; }
 

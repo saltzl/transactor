@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -34,7 +34,7 @@ import salsa.resources.ActorService;
 import java.io.*;
 import java.util.*;
 
-public class MassMessage extends UniversalActor  {
+public class MassMessage extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -186,7 +186,7 @@ public class MassMessage extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public MassMessage self;
 		public void updateSelf(ActorReference actorReference) {
 			((MassMessage)actorReference).setUAL(getUAL());
@@ -195,14 +195,6 @@ public class MassMessage extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -217,7 +209,26 @@ public class MassMessage extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -244,6 +255,8 @@ public class MassMessage extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -304,7 +317,7 @@ public class MassMessage extends UniversalActor  {
 						// standardOutput<-println("[error] Can't open the file "+theatersFile+" for reading.")
 						{
 							Object _arguments[] = { "[error] Can't open the file "+theatersFile+" for reading." };
-							Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -323,7 +336,7 @@ public class MassMessage extends UniversalActor  {
 							// actors[i]<-sendData(new Integer(j))
 							{
 								Object _arguments[] = { new Integer(j) };
-								Message message = new Message( self, actors[i], "sendData", _arguments, null, token_3_0 );
+								TransactorMessage message = new TransactorMessage( self, actors[i], this.wv, "sendData", _arguments, null, token_3_0 );
 								__messages.add( message );
 							}
 						}
@@ -332,7 +345,7 @@ public class MassMessage extends UniversalActor  {
 					// standardOutput<-println("Done!")
 					{
 						Object _arguments[] = { "Done!" };
-						Message message = new Message( self, standardOutput, "println", _arguments, token_3_0, null );
+						TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, token_3_0, null );
 						__messages.add( message );
 					}
 				}

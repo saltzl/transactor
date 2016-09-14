@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -34,7 +34,7 @@ import salsa.resources.ActorService;
 import java.io.*;
 import java.util.*;
 
-public class Nqueens extends UniversalActor  {
+public class Nqueens extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -180,7 +180,7 @@ public class Nqueens extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public Nqueens self;
 		public void updateSelf(ActorReference actorReference) {
 			((Nqueens)actorReference).setUAL(getUAL());
@@ -189,14 +189,6 @@ public class Nqueens extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -209,7 +201,26 @@ public class Nqueens extends UniversalActor  {
 			addMethodsForClasses();
 		}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -236,6 +247,8 @@ public class Nqueens extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -318,7 +331,7 @@ public class Nqueens extends UniversalActor  {
 						// standardOutput<-println("[error] Can't open the file "+theatersFile+" for reading.")
 						{
 							Object _arguments[] = { "[error] Can't open the file "+theatersFile+" for reading." };
-							Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+							TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 							__messages.add( message );
 						}
 					}
@@ -333,7 +346,7 @@ public class Nqueens extends UniversalActor  {
 					// startMeasurement()
 					{
 						Object _arguments[] = {  };
-						Message message = new Message( self, self, "startMeasurement", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, self, this.wv, "startMeasurement", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -345,25 +358,25 @@ public class Nqueens extends UniversalActor  {
 						// ((Nqueens)self)<-compute(0, 0, 0, 0, new Integer(SIZE), new Integer(MASK))
 						{
 							Object _arguments[] = { new Integer(0), new Integer(0), new Integer(0), new Integer(0), new Integer(SIZE), new Integer(MASK) };
-							Message message = new Message( self, ((Nqueens)self), "compute", _arguments, null, token_4_0 );
+							TransactorMessage message = new TransactorMessage( self, ((Nqueens)self), this.wv, "compute", _arguments, null, token_4_0 );
 							__messages.add( message );
 						}
 						// ((Nqueens)self)<-getCount()
 						{
 							Object _arguments[] = {  };
-							Message message = new Message( self, ((Nqueens)self), "getCount", _arguments, token_4_0, token_4_1 );
+							TransactorMessage message = new TransactorMessage( self, ((Nqueens)self), this.wv, "getCount", _arguments, token_4_0, token_4_1 );
 							__messages.add( message );
 						}
 						// standardOutput<-println(token)
 						{
 							Object _arguments[] = { token_4_1 };
-							Message message = new Message( self, standardOutput, "println", _arguments, token_4_1, token_4_2 );
+							TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, token_4_1, token_4_2 );
 							__messages.add( message );
 						}
 						// showMeasurement()
 						{
 							Object _arguments[] = {  };
-							Message message = new Message( self, self, "showMeasurement", _arguments, token_4_2, null );
+							TransactorMessage message = new TransactorMessage( self, self, this.wv, "showMeasurement", _arguments, token_4_2, null );
 							__messages.add( message );
 						}
 					}
@@ -395,7 +408,7 @@ public class Nqueens extends UniversalActor  {
 									// actors[indexOfActors%actors.length]<-Backtrack(new Integer(2), new Integer((jleft|bit)<<1), new Integer(jdown|bit), new Integer((jright|bit)>>1), new Integer(SIZE), new Integer(MASK))
 									{
 										Object _arguments[] = { new Integer(2), new Integer((jleft|bit)<<1), new Integer(jdown|bit), new Integer((jright|bit)>>1), new Integer(SIZE), new Integer(MASK) };
-										Message message = new Message( self, actors[indexOfActors%actors.length], "Backtrack", _arguments, null, token_4_0 );
+										TransactorMessage message = new TransactorMessage( self, actors[indexOfActors%actors.length], this.wv, "Backtrack", _arguments, null, token_4_0 );
 										__messages.add( message );
 									}
 								}
@@ -410,7 +423,7 @@ public class Nqueens extends UniversalActor  {
 								// actors[i]<-getCount()
 								{
 									Object _arguments[] = {  };
-									Message message = new Message( self, actors[i], "getCount", _arguments, token_4_0, token_4_1 );
+									TransactorMessage message = new TransactorMessage( self, actors[i], this.wv, "getCount", _arguments, token_4_0, token_4_1 );
 									__messages.add( message );
 								}
 							}
@@ -419,25 +432,25 @@ public class Nqueens extends UniversalActor  {
 						// ((Nqueens)self)<-add(token)
 						{
 							Object _arguments[] = { token_4_1 };
-							Message message = new Message( self, ((Nqueens)self), "add", _arguments, token_4_1, token_4_2 );
+							TransactorMessage message = new TransactorMessage( self, ((Nqueens)self), this.wv, "add", _arguments, token_4_1, token_4_2 );
 							__messages.add( message );
 						}
 						// ((Nqueens)self)<-getCount()
 						{
 							Object _arguments[] = {  };
-							Message message = new Message( self, ((Nqueens)self), "getCount", _arguments, token_4_2, token_4_3 );
+							TransactorMessage message = new TransactorMessage( self, ((Nqueens)self), this.wv, "getCount", _arguments, token_4_2, token_4_3 );
 							__messages.add( message );
 						}
 						// standardOutput<-println(token)
 						{
 							Object _arguments[] = { token_4_3 };
-							Message message = new Message( self, standardOutput, "println", _arguments, token_4_3, token_4_4 );
+							TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, token_4_3, token_4_4 );
 							__messages.add( message );
 						}
 						// showMeasurement()
 						{
 							Object _arguments[] = {  };
-							Message message = new Message( self, self, "showMeasurement", _arguments, token_4_4, null );
+							TransactorMessage message = new TransactorMessage( self, self, this.wv, "showMeasurement", _arguments, token_4_4, null );
 							__messages.add( message );
 						}
 					}

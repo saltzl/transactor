@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class DelayTest extends UniversalActor  {
+public class DelayTest extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -178,7 +178,7 @@ public class DelayTest extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public DelayTest self;
 		public void updateSelf(ActorReference actorReference) {
 			((DelayTest)actorReference).setUAL(getUAL());
@@ -187,14 +187,6 @@ public class DelayTest extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -209,7 +201,26 @@ public class DelayTest extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -236,6 +247,8 @@ public class DelayTest extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -269,7 +282,7 @@ public class DelayTest extends UniversalActor  {
 				// standardOutput<-print("Hello")
 				{
 					Object _arguments[] = { "Hello" };
-					Message message = new Message( self, standardOutput, "print", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "print", _arguments, null, null );
 					Object[] _propertyInfo = { new Integer(10000) };
 					message.setProperty( "delay", _propertyInfo );
 					__messages.add( message );
@@ -279,7 +292,7 @@ public class DelayTest extends UniversalActor  {
 				// standardOutput<-println(" World!")
 				{
 					Object _arguments[] = { " World!" };
-					Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 					__messages.add( message );
 				}
 			}

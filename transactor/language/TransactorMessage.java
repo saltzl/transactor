@@ -10,17 +10,21 @@
 
 package transactor.language;
 
-import salsa.language.*
+import salsa.language.*;
+import gc.*;
+import java.io.*;
+import java.util.Vector;
 
 public class TransactorMessage extends Message {
 
-	private Worldview msg_wv;
+	public Worldview msg_wv;
 
 	public TransactorMessage(ActorReference source, Object target, Worldview msg_wv, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken)  {
 		this(source, target, msg_wv, methodName, arguments, synchronizationToken, continuationToken,true,true);
 	}
 
 	public TransactorMessage(WeakReference source, WeakReference target, Worldview msg_wv, String methodName, Object[] arguments, boolean requireAck) {
+		super(source,target,methodName,arguments,requireAck);
 		this.needAck=requireAck;
 		this.target=target;
 		this.source=source;
@@ -87,7 +91,7 @@ public class TransactorMessage extends Message {
     	try {
     		ByteArrayOutputStream bos = new ByteArrayOutputStream();
     		ObjectOutputStream outStream = new ObjectOutputStream( bos);
-    		outStream.writeObject(worldview);
+    		outStream.writeObject(msg_wv);
     		outStream.flush();
     		serializedWorldView = bos.toByteArray();
     		outStream.close();
@@ -100,7 +104,7 @@ public class TransactorMessage extends Message {
     		ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
     		ObjectInputStream inStream;
     		inStream = new ObjectInputStream(bis);
-    		worldview= (Worldview) inStream.readObject();
+    		msg_wv= (Worldview) inStream.readObject();
     		inStream.close();
     		bis.close();
     	}
@@ -109,6 +113,6 @@ public class TransactorMessage extends Message {
 
 
     public Worldview getWorldview() {
-    	return this.worldview;
+    	return this.msg_wv;
     }
 }

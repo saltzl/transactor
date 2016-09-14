@@ -41,7 +41,7 @@ public class BehaviorBody extends SimpleNode {
 
                 String code = "{\n";
 
-                /**
+                /*
                         Create and send a message which will invoke act on the actor.
                 */
                 code += SalsaCompiler.getIndent() + "public static void main(String args[]) {\n";
@@ -88,7 +88,7 @@ public class BehaviorBody extends SimpleNode {
 
                 code += SalsaCompiler.getIndent() + "}\n\n";
 
-                /**
+                /*
                         Generate code for the constructors.
                         ActorName(boolean o, UAN uan) is used for getReferenceByName
                         ActorName(boolean o, UAL ual) is used for get ReferenceByLocation
@@ -106,9 +106,9 @@ public class BehaviorBody extends SimpleNode {
                 code += SalsaCompiler.getIndent() + "public " + actorName + "(boolean o, UAN __uan)\t{ super(false,__uan); }\n";
                 code += SalsaCompiler.getIndent() + "public " + actorName + "(boolean o, UAL __ual)\t{ super(false,__ual); }\n\n";
 
-                code += SalsaCompiler.getIndent() + "public " + actorName + "(UAN __uan,UniversalActor.State sourceActor)\t{ this(__uan, null,null); }\n";
-                code += SalsaCompiler.getIndent() + "public " + actorName + "(UAL __ual,UniversalActor.State sourceActor)\t{ this(null, __ual,null); }\n";
-                code += SalsaCompiler.getIndent() + "public " + actorName + "(UniversalActor.State sourceActor)\t\t{ this(null, null,null);  }\n";
+                code += SalsaCompiler.getIndent() + "public " + actorName + "(UAN __uan,Transactor.State sourceActor)\t{ this(__uan, null,null); }\n";
+                code += SalsaCompiler.getIndent() + "public " + actorName + "(UAL __ual,Transactor.State sourceActor)\t{ this(null, __ual,null); }\n";
+                code += SalsaCompiler.getIndent() + "public " + actorName + "(Transactor.State sourceActor)\t\t{ this(null, null,null);  }\n";
                 code += SalsaCompiler.getIndent() + "public " + actorName + "()\t\t{  }\n";
                 code += SalsaCompiler.getIndent() + "public " + actorName + "(UAN __uan, UAL __ual,Object sourceActor) {\n";
                 code += SalsaCompiler.getIndent() + "\tif (__ual != null && !__ual.getLocation().equals(ServiceFactory.getTheater().getLocation())) {\n";
@@ -133,7 +133,7 @@ public class BehaviorBody extends SimpleNode {
                         for (int i = 0; i < children.length; i++) {
                                 if (getChild(i) instanceof ConstructorDeclaration) {
                                         if (getChild(i).getChild(1).children == null) hasBasic = true;
-                                        code += SalsaCompiler.getIndent() + "public UniversalActor construct (" + getChild(i).getChild(1).getJavaCode() + ") {\n";
+                                        code += SalsaCompiler.getIndent() + "public Transactor construct (" + getChild(i).getChild(1).getJavaCode() + ") {\n";
                                         code += SalsaCompiler.getIndent() + "\tObject[] __arguments = { " + ((FormalParameters)getChild(i).getChild(1)).getNonPrimitiveNames() + " };\n";
                                         code += SalsaCompiler.getIndent() + "\tthis.send( new Message(this, this, \"construct\", __arguments, null, null) );\n";
                                         code += SalsaCompiler.getIndent() + "\treturn this;\n";
@@ -142,14 +142,14 @@ public class BehaviorBody extends SimpleNode {
                         }
                 }
                 if (!hasBasic) {
-                        code += SalsaCompiler.getIndent() + "public UniversalActor construct() {\n";
+                        code += SalsaCompiler.getIndent() + "public Transactor construct() {\n";
                         code += SalsaCompiler.getIndent() + "\tObject[] __arguments = { };\n";
                         code += SalsaCompiler.getIndent() + "\tthis.send( new Message(this, this, \"construct\", __arguments, null, null) );\n";
                         code += SalsaCompiler.getIndent() + "\treturn this;\n";
                         code += SalsaCompiler.getIndent() + "}\n\n";
                 }
 
-                /**
+                /*
                         Actually create the state.
                         If this actor extends another actor, have it extend that actors state
                 */
@@ -230,7 +230,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() + "\tcurrent.add(name);\n";
                 code += SalsaCompiler.getIndent() + "\tif (union.invalidates(wv.getHistMap(),current)){\n";
                 code += SalsaCompiler.getIndent() + "\t\tif(wv.getHistMap().get(name).isPersistent()){\n";
-                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );\n";
+                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), message.getArguments(), null, null, false );\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tself.send(pass_msg);\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tthis.rollback(true);\n";
                 code += SalsaCompiler.getIndent() + "\t\t}else{\n";
@@ -238,9 +238,9 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() + "\t\t};\n";
                 code += SalsaCompiler.getIndent() + "\t\treturn;\n";
                 code += SalsaCompiler.getIndent() + "\t}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {\n";
-                code += SalsaCompiler.getIndent() + "\t\tresponseAck(msg);\n";
+                code += SalsaCompiler.getIndent() + "\t\tresponseAck(message);\n";
                 code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
-                code += SalsaCompiler.getIndent() + "\t\twv.setRootSet(newHashSet());\n";
+                code += SalsaCompiler.getIndent() + "\t\twv.setRootSet(new HashSet());\n";
                 code += SalsaCompiler.getIndent() + "\t\treturn;";
                 code += SalsaCompiler.getIndent() + "\t}else{\n";
                 code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
@@ -315,7 +315,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 
 		String code = "{\n";
 
-		/**
+		/*
 			Create and send a message which will invoke act on the actor.
 		*/
 		code += SalsaCompiler.getIndent() + "public static void main(String args[]) {\n";
@@ -367,7 +367,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() + "\tRunTime.finishedProcessingMessage();\n";
 		code += SalsaCompiler.getIndent() + "}\n\n";
 
-		/**
+		/*
 			Generate code for the constructors.
 			ActorName(boolean o, UAN uan) is used for getReferenceByName
 			ActorName(boolean o, UAL ual) is used for get ReferenceByLocation
@@ -386,9 +386,9 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 		code += SalsaCompiler.getIndent() + "public " + actorName + "(boolean o, UAL __ual)\t{ super(false,__ual); }\n";
                 //code += SalsaCompiler.getIndent() + "public " + actorName + "()\t{ super(null,null); }\n\n";
 
-		code += SalsaCompiler.getIndent() + "public " + actorName + "(UAN __uan,UniversalActor.State sourceActor)\t{ this(__uan, null, sourceActor); }\n";
-		code += SalsaCompiler.getIndent() + "public " + actorName + "(UAL __ual,UniversalActor.State sourceActor)\t{ this(null, __ual, sourceActor); }\n";
-		code += SalsaCompiler.getIndent() + "public " + actorName + "(UniversalActor.State sourceActor)\t\t{ this(null, null, sourceActor);  }\n";
+		code += SalsaCompiler.getIndent() + "public " + actorName + "(UAN __uan,Transactor.State sourceActor)\t{ this(__uan, null, sourceActor); }\n";
+		code += SalsaCompiler.getIndent() + "public " + actorName + "(UAL __ual,Transactor.State sourceActor)\t{ this(null, __ual, sourceActor); }\n";
+		code += SalsaCompiler.getIndent() + "public " + actorName + "(Transactor.State sourceActor)\t\t{ this(null, null, sourceActor);  }\n";
                 code += SalsaCompiler.getIndent() + "public " + actorName + "()\t\t{  }\n";
 		code += SalsaCompiler.getIndent() + "public " + actorName + "(UAN __uan, UAL __ual, Object obj) {\n";
 
@@ -402,9 +402,9 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() +"\t//if obj is null, the actor must be the startup actor.\n";
                 code += SalsaCompiler.getIndent() +"\t//if obj is an actorReference, this actor is created by a remote actor\n\n";
 
-                code += SalsaCompiler.getIndent() +"\tif (obj instanceof UniversalActor.State || obj==null) {\n";
-                code += SalsaCompiler.getIndent() +"\t\t  UniversalActor.State sourceActor;\n";
-                code += SalsaCompiler.getIndent() +"\t\t  if (obj!=null) { sourceActor=(UniversalActor.State) obj;}\n";
+                code += SalsaCompiler.getIndent() +"\tif (obj instanceof Transactor.State || obj==null) {\n";
+                code += SalsaCompiler.getIndent() +"\t\t  Transactor.State sourceActor;\n";
+                code += SalsaCompiler.getIndent() +"\t\t  if (obj!=null) { sourceActor=(Transactor.State) obj;}\n";
                 code += SalsaCompiler.getIndent() +"\t\t  else {sourceActor=null;}\n\n";
 
                 code += SalsaCompiler.getIndent() +"\t\t  //remote creation message sent to a remote system service.\n";
@@ -434,7 +434,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() +"\t\t      state.getActorMemory().getInverseList().putInverseReference(\"rmsp://me\");\n";
                 code += SalsaCompiler.getIndent() +"\t\t    }\n\n";
                 code += SalsaCompiler.getIndent() +"\t\t    //the souce actor is a normal actor\n";
-                code += SalsaCompiler.getIndent() +"\t\t    else if (sourceActor instanceof UniversalActor.State) {\n\n";
+                code += SalsaCompiler.getIndent() +"\t\t    else if (sourceActor instanceof Transactor.State) {\n\n";
                 code += SalsaCompiler.getIndent() +"\t\t      // this reference is part of garbage collection\n";
                 code += SalsaCompiler.getIndent() +"\t\t      activateGC();\n\n";
 
@@ -484,7 +484,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 			for (int i = 0; i < children.length; i++) {
 				if (getChild(i) instanceof ConstructorDeclaration) {
 					if (getChild(i).getChild(1).children == null) hasBasic = true;
-					code += SalsaCompiler.getIndent() + "public UniversalActor construct (" + getChild(i).getChild(1).getJavaCode() + ") {\n";
+					code += SalsaCompiler.getIndent() + "public Transactor construct (" + getChild(i).getChild(1).getJavaCode() + ") {\n";
 					code += SalsaCompiler.getIndent() + "\tObject[] __arguments = { " + ((FormalParameters)getChild(i).getChild(1)).getNonPrimitiveNames() + " };\n";
 					code += SalsaCompiler.getIndent() + "\tthis.send( new Message(this, this, \"construct\", __arguments, null, null) );\n";
 					code += SalsaCompiler.getIndent() + "\treturn this;\n";
@@ -493,14 +493,14 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 			}
 		}
 		if (!hasBasic) {
-			code += SalsaCompiler.getIndent() + "public UniversalActor construct() {\n";
+			code += SalsaCompiler.getIndent() + "public Transactor construct() {\n";
 			code += SalsaCompiler.getIndent() + "\tObject[] __arguments = { };\n";
 			code += SalsaCompiler.getIndent() + "\tthis.send( new Message(this, this, \"construct\", __arguments, null, null) );\n";
 			code += SalsaCompiler.getIndent() + "\treturn this;\n";
 			code += SalsaCompiler.getIndent() + "}\n\n";
 		}
 
-		/**
+		/*
 			Actually create the state.
 			If this actor extends another actor, have it extend that actors state
 		*/
@@ -562,12 +562,12 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                code += SalsaCompiler.getIndent() + "public void process(TransactorMessage message) {\n";
 
 
-                code += SalsaCompiler.getIndent() + "\tWorldview union = wv.union(message.worldview);\n";
+                code += SalsaCompiler.getIndent() + "\tWorldview union = wv.union(message.getWorldview());\n";
                 code += SalsaCompiler.getIndent() + "\tHashSet current = new HashSet();\n";
                 code += SalsaCompiler.getIndent() + "\tcurrent.add(name);\n";
                 code += SalsaCompiler.getIndent() + "\tif (union.invalidates(wv.getHistMap(),current)){\n";
                 code += SalsaCompiler.getIndent() + "\t\tif(wv.getHistMap().get(name).isPersistent()){\n";
-                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );\n";
+                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.getWorldview(), message.getMethodName(), message.getArguments(), null, null, false );\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tself.send(pass_msg);\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tthis.rollback(true);\n";
                 code += SalsaCompiler.getIndent() + "\t\t}else{\n";
@@ -575,9 +575,9 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() + "\t\t};\n";
                 code += SalsaCompiler.getIndent() + "\t\treturn;\n";
                 code += SalsaCompiler.getIndent() + "\t}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {\n";
-                code += SalsaCompiler.getIndent() + "\t\tresponseAck(msg);\n";
+                code += SalsaCompiler.getIndent() + "\t\tresponseAck(message);\n";
                 code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
-                code += SalsaCompiler.getIndent() + "\t\twv.setRootSet(newHashSet());\n";
+                code += SalsaCompiler.getIndent() + "\t\twv.setRootSet(new HashSet());\n";
                 code += SalsaCompiler.getIndent() + "\t\treturn;";
                 code += SalsaCompiler.getIndent() + "\t}else{\n";
                 code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
@@ -612,8 +612,8 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 		code += SalsaCompiler.getIndent() + "\t\t\tcurrentMessage.resolveContinuations(returnValue);\n";
 		code += SalsaCompiler.getIndent() + "\t\t\treturn;\n";
 		code += SalsaCompiler.getIndent() + "\t\t}\n";
-        code += SalsaCompiler.getIndent() + "\t\tSystem.err.println(\"Uncaught exception in \" + toString() + \" , starting rollback.\")\n";
-        code += SalsaCompiler.getIndent() + "\t\tthis.rollback(); // no method with an unhandled exception was executed\n";
+        code += SalsaCompiler.getIndent() + "\t\tSystem.err.println(\"Uncaught exception in \" + toString() + \" , starting rollback.\");\n";
+        code += SalsaCompiler.getIndent() + "\t\tthis.rollback(true); // no method with an unhandled exception was executed\n";
 		code += SalsaCompiler.getIndent() + "\t}\n\n";
 
 

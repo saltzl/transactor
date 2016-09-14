@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class PingPongForAGC extends UniversalActor  {
+public class PingPongForAGC extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -178,7 +178,7 @@ public class PingPongForAGC extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public PingPongForAGC self;
 		public void updateSelf(ActorReference actorReference) {
 			((PingPongForAGC)actorReference).setUAL(getUAL());
@@ -187,14 +187,6 @@ public class PingPongForAGC extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -209,7 +201,26 @@ public class PingPongForAGC extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -236,6 +247,8 @@ public class PingPongForAGC extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -275,19 +288,19 @@ public class PingPongForAGC extends UniversalActor  {
 					// myActor<-migrate(args[1])
 					{
 						Object _arguments[] = { args[1] };
-						Message message = new Message( self, myActor, "migrate", _arguments, null, token_3_0 );
+						TransactorMessage message = new TransactorMessage( self, myActor, this.wv, "migrate", _arguments, null, token_3_0 );
 						__messages.add( message );
 					}
 					// myActor<-startPingPong()
 					{
 						Object _arguments[] = {  };
-						Message message = new Message( self, myActor, "startPingPong", _arguments, token_3_0, token_3_1 );
+						TransactorMessage message = new TransactorMessage( self, myActor, this.wv, "startPingPong", _arguments, token_3_0, token_3_1 );
 						__messages.add( message );
 					}
 					// myActor<-removeAcquaintance()
 					{
 						Object _arguments[] = {  };
-						Message message = new Message( self, myActor, "removeAcquaintance", _arguments, token_3_1, token_3_2 );
+						TransactorMessage message = new TransactorMessage( self, myActor, this.wv, "removeAcquaintance", _arguments, token_3_1, token_3_2 );
 						Object[] _propertyInfo = { new Integer(20000) };
 						message.setProperty( "delay", _propertyInfo );
 						__messages.add( message );
@@ -295,7 +308,7 @@ public class PingPongForAGC extends UniversalActor  {
 					// standardOutput<-println("kindadone!")
 					{
 						Object _arguments[] = { "kindadone!" };
-						Message message = new Message( self, standardOutput, "println", _arguments, token_3_2, null );
+						TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, token_3_2, null );
 						__messages.add( message );
 					}
 				}
@@ -305,7 +318,7 @@ public class PingPongForAGC extends UniversalActor  {
 					// standardOutput<-println("USAGE:java tests.distributed.PingPongForAGC <UAN> <target UAL>")
 					{
 						Object _arguments[] = { "USAGE:java tests.distributed.PingPongForAGC <UAN> <target UAL>" };
-						Message message = new Message( self, standardOutput, "println", _arguments, null, null );
+						TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, null, null );
 						__messages.add( message );
 					}
 				}
@@ -324,7 +337,7 @@ public class PingPongForAGC extends UniversalActor  {
 					// pingpongActors[i]<-setAcquaintance(pingpongActors[(i+1)%pingpongActors.length])
 					{
 						Object _arguments[] = { pingpongActors[(i+1)%pingpongActors.length] };
-						Message message = new Message( self, pingpongActors[i], "setAcquaintance", _arguments, null, token_2_0 );
+						TransactorMessage message = new TransactorMessage( self, pingpongActors[i], this.wv, "setAcquaintance", _arguments, null, token_2_0 );
 						__messages.add( message );
 					}
 				}
@@ -332,7 +345,7 @@ public class PingPongForAGC extends UniversalActor  {
 				// pingpongActors[0]<-pingpong()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, pingpongActors[0], "pingpong", _arguments, token_2_0, null );
+					TransactorMessage message = new TransactorMessage( self, pingpongActors[0], this.wv, "pingpong", _arguments, token_2_0, null );
 					__messages.add( message );
 				}
 			}
@@ -348,7 +361,7 @@ public class PingPongForAGC extends UniversalActor  {
 				// myActor<-pingpong()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, myActor, "pingpong", _arguments, null, null );
+					TransactorMessage message = new TransactorMessage( self, myActor, this.wv, "pingpong", _arguments, null, null );
 					__messages.add( message );
 				}
 			}

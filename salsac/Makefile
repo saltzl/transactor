@@ -4,6 +4,8 @@ compiler:
 	javac *.java definitions/*.java
 	echo "In salsac/SalsaParser.java, add the line \"nodeTable.current.addToken(token);\" before the return statement in jj_consume_token()"
 
+finalize:
+	javac *.java definitions/*.java
 clean:
 	rm Token.java TokenMgrError.java ParseException.java JavaCharStream.java -f
 	rm *.class definitions/*.class -f

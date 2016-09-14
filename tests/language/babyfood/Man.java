@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -32,7 +32,7 @@ import salsa.resources.ActorService;
 // End SALSA compiler generated import delcarations.
 
 
-public class Man extends UniversalActor  {
+public class Man extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -178,7 +178,7 @@ public class Man extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public Man self;
 		public void updateSelf(ActorReference actorReference) {
 			((Man)actorReference).setUAL(getUAL());
@@ -201,7 +201,26 @@ public class Man extends UniversalActor  {
 
 		public void construct() {}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -228,6 +247,8 @@ public class Man extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -262,7 +283,7 @@ public class Man extends UniversalActor  {
 				// token dataf = f<-toString()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, f, "toString", _arguments, null, dataf );
+					TransactorMessage message = new TransactorMessage( self, f, this.wv, "toString", _arguments, null, dataf );
 					__messages.add( message );
 				}
 			}
@@ -273,25 +294,25 @@ public class Man extends UniversalActor  {
 				// toString()
 				{
 					Object _arguments[] = {  };
-					Message message = new Message( self, self, "toString", _arguments, null, token_2_0 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "toString", _arguments, null, token_2_0 );
 					__messages.add( message );
 				}
 				// combineString(token, " eats ")
 				{
 					Object _arguments[] = { token_2_0, " eats " };
-					Message message = new Message( self, self, "combineString", _arguments, token_2_0, token_2_1 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "combineString", _arguments, token_2_0, token_2_1 );
 					__messages.add( message );
 				}
 				// combineString(token, dataf)
 				{
 					Object _arguments[] = { token_2_1, dataf };
-					Message message = new Message( self, self, "combineString", _arguments, token_2_1, token_2_2 );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "combineString", _arguments, token_2_1, token_2_2 );
 					__messages.add( message );
 				}
 				// standardOutput<-println(token)
 				{
 					Object _arguments[] = { token_2_2 };
-					Message message = new Message( self, standardOutput, "println", _arguments, token_2_2, null );
+					TransactorMessage message = new TransactorMessage( self, standardOutput, this.wv, "println", _arguments, token_2_2, null );
 					__messages.add( message );
 				}
 			}

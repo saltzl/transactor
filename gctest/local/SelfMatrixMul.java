@@ -18,7 +18,7 @@ import salsa.language.Token;
 import salsa.language.exceptions.*;
 import salsa.language.exceptions.CurrentContinuationException;
 
-import salsa.language.UniversalActor;
+import transactor.language.*;;
 
 import salsa.naming.UAN;
 import salsa.naming.UAL;
@@ -34,7 +34,7 @@ import salsa.resources.ActorService;
 import java.util.*;
 import java.io.*;
 
-public class SelfMatrixMul extends UniversalActor  {
+public class SelfMatrixMul extends Transactor  {
 	public static void main(String args[]) {
 		UAN uan = null;
 		UAL ual = null;
@@ -186,7 +186,7 @@ public class SelfMatrixMul extends UniversalActor  {
 		return this;
 	}
 
-	public class State extends UniversalActor .State {
+	public class State extends Transactor .State {
 		public SelfMatrixMul self;
 		public void updateSelf(ActorReference actorReference) {
 			((SelfMatrixMul)actorReference).setUAL(getUAL());
@@ -195,14 +195,6 @@ public class SelfMatrixMul extends UniversalActor  {
 			self.setUAN(getUAN());
 			self.setUAL(getUAL());
 			self.activateGC();
-		}
-
-		public void preAct(String[] arguments) {
-			getActorMemory().getInverseList().removeInverseReference("rmsp://me",1);
-			{
-				Object[] __args={arguments};
-				self.send( new Message(self,self, "act", __args, null,null,false) );
-			}
 		}
 
 		public State() {
@@ -215,7 +207,26 @@ public class SelfMatrixMul extends UniversalActor  {
 			addMethodsForClasses();
 		}
 
-		public void process(Message message) {
+		public void process(TransactorMessage message) {
+			Worldview union = wv.union(message.worldview);
+			HashSet current = new HashSet();
+			current.add(name);
+			if (union.invalidates(wv.getHistMap(),current)){
+				if(wv.getHistMap().get(name).isPersistent()){
+					TransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), args, null, null, false );
+					self.send(pass_msg);
+					this.rollback(true);
+				}else{
+					this.destroy();
+				};
+				return;
+			}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {
+				responseAck(msg);
+				wv = union;
+				wv.setRootSet(newHashSet());
+				return;			}else{
+				wv = union;
+			}
 			Method[] matches = getMatches(message.getMethodName());
 			Object returnValue = null;
 			Exception exception = null;
@@ -242,6 +253,8 @@ public class SelfMatrixMul extends UniversalActor  {
 					currentMessage.resolveContinuations(returnValue);
 					return;
 				}
+				System.err.println("Uncaught exception in " + toString() + " , starting rollback.")
+				this.rollback(); // no method with an unhandled exception was executed
 			}
 
 			System.err.println("Message processing exception:");
@@ -381,7 +394,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t1 = m1<-exp(org, new Integer(e1))
 				{
 					Object _arguments[] = { org, new Integer(e1) };
-					Message message = new Message( self, m1, "exp", _arguments, null, t1 );
+					TransactorMessage message = new TransactorMessage( self, m1, this.wv, "exp", _arguments, null, t1 );
 					__messages.add( message );
 				}
 			}
@@ -390,7 +403,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t2 = m2<-exp(org, new Integer(16))
 				{
 					Object _arguments[] = { org, new Integer(16) };
-					Message message = new Message( self, m2, "exp", _arguments, null, t2 );
+					TransactorMessage message = new TransactorMessage( self, m2, this.wv, "exp", _arguments, null, t2 );
 					__messages.add( message );
 				}
 			}
@@ -399,7 +412,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t3 = m3<-exp(org, new Integer(e2))
 				{
 					Object _arguments[] = { org, new Integer(e2) };
-					Message message = new Message( self, m3, "exp", _arguments, null, t3 );
+					TransactorMessage message = new TransactorMessage( self, m3, this.wv, "exp", _arguments, null, t3 );
 					__messages.add( message );
 				}
 			}
@@ -408,7 +421,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t4 = m4<-exp(org, new Integer(256))
 				{
 					Object _arguments[] = { org, new Integer(256) };
-					Message message = new Message( self, m4, "exp", _arguments, null, t4 );
+					TransactorMessage message = new TransactorMessage( self, m4, this.wv, "exp", _arguments, null, t4 );
 					__messages.add( message );
 				}
 			}
@@ -417,7 +430,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t5 = m5<-exp(org, new Integer(e3))
 				{
 					Object _arguments[] = { org, new Integer(e3) };
-					Message message = new Message( self, m5, "exp", _arguments, null, t5 );
+					TransactorMessage message = new TransactorMessage( self, m5, this.wv, "exp", _arguments, null, t5 );
 					__messages.add( message );
 				}
 			}
@@ -426,7 +439,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t6 = m6<-exp(org, new Integer(4096))
 				{
 					Object _arguments[] = { org, new Integer(4096) };
-					Message message = new Message( self, m6, "exp", _arguments, null, t6 );
+					TransactorMessage message = new TransactorMessage( self, m6, this.wv, "exp", _arguments, null, t6 );
 					__messages.add( message );
 				}
 			}
@@ -435,7 +448,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t7 = m7<-exp(org, new Integer(e4))
 				{
 					Object _arguments[] = { org, new Integer(e4) };
-					Message message = new Message( self, m7, "exp", _arguments, null, t7 );
+					TransactorMessage message = new TransactorMessage( self, m7, this.wv, "exp", _arguments, null, t7 );
 					__messages.add( message );
 				}
 			}
@@ -444,7 +457,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t8 = m8<-exp(org, new Integer(65536))
 				{
 					Object _arguments[] = { org, new Integer(65536) };
-					Message message = new Message( self, m8, "exp", _arguments, null, t8 );
+					TransactorMessage message = new TransactorMessage( self, m8, this.wv, "exp", _arguments, null, t8 );
 					__messages.add( message );
 				}
 			}
@@ -453,7 +466,7 @@ public class SelfMatrixMul extends UniversalActor  {
 				// token t9 = m9<-exp(org, new Integer(e5))
 				{
 					Object _arguments[] = { org, new Integer(e5) };
-					Message message = new Message( self, m9, "exp", _arguments, null, t9 );
+					TransactorMessage message = new TransactorMessage( self, m9, this.wv, "exp", _arguments, null, t9 );
 					__messages.add( message );
 				}
 			}
@@ -469,55 +482,55 @@ public class SelfMatrixMul extends UniversalActor  {
 				// ((SelfMatrixMul)self)<-mul(t1, t2)
 				{
 					Object _arguments[] = { t1, t2 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "mul", _arguments, null, token_2_0 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "mul", _arguments, null, token_2_0 );
 					__messages.add( message );
 				}
 				// ((SelfMatrixMul)self)<-mul(token, t3)
 				{
 					Object _arguments[] = { token_2_0, t3 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "mul", _arguments, token_2_0, token_2_1 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "mul", _arguments, token_2_0, token_2_1 );
 					__messages.add( message );
 				}
 				// ((SelfMatrixMul)self)<-mul(token, t4)
 				{
 					Object _arguments[] = { token_2_1, t4 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "mul", _arguments, token_2_1, token_2_2 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "mul", _arguments, token_2_1, token_2_2 );
 					__messages.add( message );
 				}
 				// ((SelfMatrixMul)self)<-mul(token, t5)
 				{
 					Object _arguments[] = { token_2_2, t5 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "mul", _arguments, token_2_2, token_2_3 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "mul", _arguments, token_2_2, token_2_3 );
 					__messages.add( message );
 				}
 				// ((SelfMatrixMul)self)<-mul(token, t6)
 				{
 					Object _arguments[] = { token_2_3, t6 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "mul", _arguments, token_2_3, token_2_4 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "mul", _arguments, token_2_3, token_2_4 );
 					__messages.add( message );
 				}
 				// ((SelfMatrixMul)self)<-mul(token, t7)
 				{
 					Object _arguments[] = { token_2_4, t7 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "mul", _arguments, token_2_4, token_2_5 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "mul", _arguments, token_2_4, token_2_5 );
 					__messages.add( message );
 				}
 				// ((SelfMatrixMul)self)<-mul(token, t8)
 				{
 					Object _arguments[] = { token_2_5, t8 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "mul", _arguments, token_2_5, token_2_6 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "mul", _arguments, token_2_5, token_2_6 );
 					__messages.add( message );
 				}
 				// ((SelfMatrixMul)self)<-mul(token, t9)
 				{
 					Object _arguments[] = { token_2_6, t9 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "mul", _arguments, token_2_6, token_2_7 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "mul", _arguments, token_2_6, token_2_7 );
 					__messages.add( message );
 				}
 				// show(token)
 				{
 					Object _arguments[] = { token_2_7 };
-					Message message = new Message( self, self, "show", _arguments, token_2_7, null );
+					TransactorMessage message = new TransactorMessage( self, self, this.wv, "show", _arguments, token_2_7, null );
 					__messages.add( message );
 				}
 			}
@@ -551,13 +564,13 @@ continue;					}
 				// ((SelfMatrixMul)self)<-exp(org, new Integer(times))
 				{
 					Object _arguments[] = { org, new Integer(times) };
-					Message message = new Message( self, ((SelfMatrixMul)self), "exp", _arguments, null, token_2_0 );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "exp", _arguments, null, token_2_0 );
 					__messages.add( message );
 				}
 				// ((SelfMatrixMul)self)<-show(token)
 				{
 					Object _arguments[] = { token_2_0 };
-					Message message = new Message( self, ((SelfMatrixMul)self), "show", _arguments, token_2_0, null );
+					TransactorMessage message = new TransactorMessage( self, ((SelfMatrixMul)self), this.wv, "show", _arguments, token_2_0, null );
 					__messages.add( message );
 				}
 			}
