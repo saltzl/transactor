@@ -83,18 +83,15 @@ public class Transactor extends UniversalActor  {
 
         public void process(Message msg) {}
 
-		private Worldview wv;
+		protected Worldview wv;
         // We can use Self 
         // if we use self to bundle the UAN and UAL, then we need to create a custom equals() for WV mapping
         // Migration must have UAN which should not change, so UAL should not change for annoynomous actor
         // Therefore we don't have to worry about change of name unless it is possible to change UAN
-		private String name;
+		protected String name;
 
         // Transactor Universal Storage Location: URI that locates where a persistent state is saved and identifies the protocol used to save/load states from stable storage to be used by the TStorageService
-        private URI USL;
-
-        // Transaction director aka the pinger used to reconcile dependency information within a set of participants of a transaction
-        public PingDirector pingDirector;
+        protected URI USL;
 
         public final String versionAlpha = "ALPHA";
         public final String versionBeta = "BETA";
@@ -133,88 +130,6 @@ public class Transactor extends UniversalActor  {
         
 		public void setWV(Worldview wv) {
 			this.wv = wv;
-		}
-
-        /*
-         * recvMsg resolves Worldview dependencies before passing message into mailbox
-         */
-		public void recvMsg(Message msg, Worldview msg_wv) {
-            //System.out.println("Current mailbox for " + name + " : \n" + mailbox + "\n");
-            //System.out.println("next msg for " + name + " : \n" + msg + "\n");
-            //System.out.println("msgs wv :\n" + msg_wv);
-            //System.out.println("MY WV:\n" + this.wv);
-			Worldview union = wv.union(msg_wv);
-            //System.out.println("UNION:::\n" + union);
-            //System.out.println("HERE : " + msg);
-			HashSet current = new HashSet();
-			current.add(name);
-			if (union.invalidates(wv.getHistMap(), current)) {
-                //System.out.println("msg caued rollback.................");
-                /*** [rcv3] ***/
-				if (wv.getHistMap().get(name).isPersistent()) {
-					
-                    //System.out.println("roll back cause of dep\n\n");
-
-                    // Message remains and resend to recheck dependencies
-                    // self<-recvMsg(msg, msg_wv)
-                    Object args[] = { msg, msg_wv };
-                    Message pass_msg = new Message( self, self, "recvMsg", args, null, null, false );
-                    self.send(pass_msg);
-
-                    // rollback should be last call since no calls after should be processed
-					this.rollback(true);
-                    //if (isDestroyed())
-                     //   return;
-                   
-				}
-                /*** [rcv4] ***/
-				else {
-                    //System.out.println("DESTROYED................\n");
-					this.destroy();
-				}
-			}
-            /*** [rcv2] ***/
-			else if (union.invalidates(msg_wv.getHistMap(), msg_wv.getRootSet())) {
-                // Message is invalidate so we send ack and ignore
-                //System.out.println("message invalidated~~~~~~~~~~~~\n"+msg+"\n");
-                responseAck(msg);
-                wv = union;
-                wv.setRootSet(new HashSet());
-                //System.out.println("message wv: \n" + msg_wv + "\n\n");
-			}
-            /*** [rcv1] ***/
-			else {
-				wv = union;
-                //System.out.println("Got msg: " + msg + "\n\n");
-				self.send(msg);
-			}
-            //System.out.println("after mailbox for " + name + " : \n" + mailbox + "\n");
-		}
-
-        /*
-         * sendMsg calls recvMsg of recipient with msg and wv arguements
-         * Continuation might be able to handled internally in Message object 
-         */
-        /*** [snd] ***/
-        // NOTE: We need sendMsg to be sequential since we need to track wv sequentially by the message 
-        // send in here is concurrent to follow the actor model 
-		public void sendMsg(String method, Object[] params, Transactor recipient) {
-            // Create the Message
-			Message msg = new Message(self, recipient, method, params, null, null);
-            // Need to set property to ensure message is processed next after recvMsg is processed
-			Object[] msg_property = {"highPriority"};
-			msg.setProperty("priority", msg_property);
-            //System.out.println("this is a msg:\n" + (String)msg.getPropertyParameters()[0]);
-            // recipient<-recvMsg(msg, this.wv)
-            
-            // Reference splitting in Message initialization prevents local object reference sharing
-            // so we capture the current Worldview at this instance, 
-            // therefore worldview modifications after this call will not be reflected
-            Object args[] = { msg, this.wv };
-            Message recvMsg = new Message( self, recipient, "recvMsg", args, null, null );
-            //System.out.println(name + " sending : " + msg);
-            //System.out.println("Sending msg: " + msg + "\n\n");
-            __messages.add(recvMsg);
 		}
         
         /* 
@@ -480,37 +395,5 @@ public class Transactor extends UniversalActor  {
 			wv.getRootSet().add(name);
             return value;
 		}
-
-        /* 
-         * Coordinator transactor records current CDSUpdate director and sends itself the trigger msg
-         * NOTE: Sending the trigger message to self to start the CDSUpdate places its name in the root set
-         * which may be undesirable in certain circumstances...
-         */
-        public void CDSUpdateStart(String msg, Object[] msg_args, PingDirector director){
-            this.setTState("pingDirector", director);
-            this.sendMsg(msg, msg_args, this.self());
-        }
-
-        /*
-         * Handles sending ping msgs to all participants within a transaction to reach global consistency
-         */
-        public void pingreq(Transactor[] pingreqs) {
-            for (Object t : pingreqs){
-                this.sendMsg("ping", new Object[0], (Transactor)t);
-            }
-            this.checkpoint(); return;
-        }
-
-        public void ping() {
-            this.checkpoint(); return;
-        }
-
-        /*
-         * Mechanism to start CDSUpdate by requesting a pinger from the CDSUpdate director
-         */
-        public void startCDSUpdate(Transactor[] participants, Transactor coordinator, String msg, Object[] msg_args){
-            Object[][] CDSUpdate = {{participants, coordinator, msg, msg_args}};
-            this.sendMsg("startCDSUpdate", CDSUpdate, ServiceFactory.getCDSUpdateDirector());
-        }
 	}
 }

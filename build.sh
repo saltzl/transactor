@@ -32,24 +32,10 @@ echo "java source..."
 javac -Xlint:none -d $DIST `find gc/ | grep "java$"`
 echo ""
 
-echo "Compiling tests"
-echo "salsa source..."
-java -Dsilent salsac.SalsaCompiler `find gctest/ | grep "salsa$"`
+echo "Compiling Transactor Package"
 echo "java source..."
-javac -Xlint:none -d $DIST `find gctest/ | grep "java$"`
-echo "salsa source..."
-java -Dsilent salsac.SalsaCompiler `find tests/ | grep "salsa$"`
-echo "java source..."
-javac -Xlint:none -d $DIST `find tests/ | grep "java$"`
+javac -Xlint:none -d $DIST `find transactor/ | grep "java$"`
 echo ""
-
-echo "Compiling Examples"
-echo "salsa source..."
-java -Dsilent salsac.SalsaCompiler `find examples/ | grep "salsa$"`
-echo "java source..."
-javac -Xlint:none -d $DIST `find examples/ | grep "java$"`
-echo ""
-
 echo "Generating jar file..."
 cd $DIST
 jar cf ../salsa$VERSION.jar `find wwc` `find salsa` `find salsac` `find gc`

@@ -68,19 +68,8 @@ public class Proxy extends Transactor  {
 		public void construct(Transactor self){
             super.construct(self);
 		}
-
-		public void recvMsg(Message msg, Worldview msg_wv) {
-            this.stabilize();
-            super.recvMsg(msg, msg_wv);
-		}
-
-		public void sendMsg(String method, Object[] params, Transactor recipient) {
-            this.stabilize();
-            super.sendMsg(method, params, recipient);
-		}
 	
         // Proxies cannot coordinate CDSUpdates and do not have an influence on the global state so they do not partake in the transaction protocol
-        public void CDSUpdateStart(String msg, Object[] msg_args, PingDirector director){}
         public void pingreq(Transactor[] pingreqs) {}
         public void ping() {}
 	}

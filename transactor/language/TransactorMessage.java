@@ -49,7 +49,7 @@ public class TransactorMessage extends Message {
 	 */
 	public TransactorMessage(ActorReference source, Object target, Worldview msg_wv, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken, boolean requireAck, boolean isCallByValue) {
 		super(source, target, methodName,arguments,synchronizationToken,continuationToken,requireAck,isCallByValue);
-		this.worldview = msg_wv;
+		this.msg_wv = msg_wv;
 		this.worldviewSplit();
 	}
 
@@ -101,7 +101,7 @@ public class TransactorMessage extends Message {
     	catch (Exception e) {System.err.println("Message Class, worldviewSplit() method: Error on serializing method arguments:"+e); return;}
 
     	try {
-    		ByteArrayInputStream bis = new ByteArrayInputStream(serializedArguments);
+    		ByteArrayInputStream bis = new ByteArrayInputStream(serializedWorldView);
     		ObjectInputStream inStream;
     		inStream = new ObjectInputStream(bis);
     		msg_wv= (Worldview) inStream.readObject();
