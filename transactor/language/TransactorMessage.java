@@ -50,7 +50,7 @@ public class TransactorMessage extends Message {
 	public TransactorMessage(ActorReference source, Object target, Worldview msg_wv, Object methodName, Object[] arguments, Token synchronizationToken, Token continuationToken, boolean requireAck, boolean isCallByValue) {
 		super(source, target, methodName,arguments,synchronizationToken,continuationToken,requireAck,isCallByValue);
 		this.msg_wv = msg_wv;
-		this.worldviewSplit();
+		this.referenceSplitting();
 	}
 
 	/**
@@ -85,7 +85,8 @@ public class TransactorMessage extends Message {
      *Reference Splitting for worldviews
      *
      */
-    public void worldviewSplit() {
+    public void referenceSplitting() {
+    	super.referenceSplitting();
     	byte[] serializedWorldView;
 
     	try {

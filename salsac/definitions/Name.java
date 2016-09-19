@@ -18,8 +18,6 @@ public class Name extends SimpleNode {
 		for (int i = 0; i < tokens.length; i++) {
 			code += getToken(i);
 		}
-		System.out.println(code);
-
 		return code;
 	}
 }

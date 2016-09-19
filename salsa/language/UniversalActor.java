@@ -232,7 +232,6 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 	 */
 	public void send(Message message) {
 		Object target = namingService.getTarget(this);
-
 		if (target instanceof Actor) {
 			try {
 				((Actor)target).putMessageInMailbox(message);
@@ -822,11 +821,11 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 		standardOutput = ServiceFactory.getOutput();
 		standardError = ServiceFactory.getError();
 		standardInput = ServiceFactory.getInput();
-
 		while (isLive()) {
 			currentMessage = getMessage();
 			if (currentMessage==null) {continue;}
-						//System.out.println("process:" + this.getIdentifier() + ", m=" + currentMessage.getMethodName());
+
+			System.out.println("process:" + this.getIdentifier() + ", m=" + currentMessage.getMethodName());
 			process(currentMessage);
 			if (!currentMessage.getMethodName().equals("die") ) {
 				RunTime.finishedProcessingMessage();

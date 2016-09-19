@@ -14,6 +14,6 @@ public class RollbackStatement extends SimpleNode {
 	public RollbackStatement(SalsaParser p, int id)	{ super(p, id); }
 
 	public String getJavaCode() {
-		return SalsaCompiler.getIndent() + "this.rollback(false);";
+		return SalsaCompiler.getIndent() + "this.rollback(false);\n";
 	}
 }

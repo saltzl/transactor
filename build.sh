@@ -38,7 +38,7 @@ javac -Xlint:none -d $DIST `find transactor/ | grep "java$"`
 echo ""
 echo "Generating jar file..."
 cd $DIST
-jar cf ../salsa$VERSION.jar `find wwc` `find salsa` `find salsac` `find gc`
+jar cf ../salsa$VERSION.jar `find wwc` `find salsa` `find salsac` `find gc` `find transactor`
 cd ..
 
 echo ""

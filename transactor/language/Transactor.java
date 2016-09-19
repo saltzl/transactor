@@ -36,6 +36,7 @@ import java.util.*;
 import java.lang.reflect.Field;
 import gc.*;
 import java.net.URI;
+import java.nio.file.Paths;
 
 // NOTE: The order of execution of worldview modification is important in some methods
 public class Transactor extends UniversalActor  {
@@ -114,7 +115,7 @@ public class Transactor extends UniversalActor  {
                 this.name = self.getUAN().toString().substring(self.getUAN().toString().lastIndexOf("/") + 1);
 			else 
                 this.name = self.getUAL().toString().substring(self.getUAL().toString().lastIndexOf("/") + 1);
-            try { this.USL = new URI("file:///Users/carrykuang/Documents/transactor/"); }
+            try { this.USL = new URI("file://" + Paths.get(".").toAbsolutePath().normalize().toString()); }
             // TODO: Handle malformed uri
             catch (Exception e) { e.printStackTrace(); }
 			wv = new Worldview();

@@ -600,9 +600,9 @@ void Statement() : {} {
 	| ReturnStatement()
 	| ThrowStatement()
 	| TryStatement()
-	| LOOKAHEAD( "checkpoint" )				CheckpointStatement()
-	| LOOKAHEAD( "stabilize" )				StabilizeStatement()
-	| LOOKAHEAD( "rollback" )				RollbackStatement()
+	| CheckpointStatement()
+	| StabilizeStatement()
+	| RollbackStatement()
 	| LOOKAHEAD(MethodLookahead()) MethodDeclaration()
 	| NestedBehaviorDeclaration()
 }

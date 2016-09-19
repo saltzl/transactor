@@ -83,7 +83,7 @@ public class BehaviorBody extends SimpleNode {
 
                 code += SalsaCompiler.getIndent() + "\t{\n";
                 code += SalsaCompiler.getIndent() + "\t\tObject[] _arguments = { args };\n";
-                code += SalsaCompiler.getIndent() + "\t\tinstance.send( new Message(instance, instance, \"act\", _arguments, null, null) );\n";
+                code += SalsaCompiler.getIndent() + "\t\tinstance.send( new TransactorMessage(instance, instance, null, \"act\", _arguments, null, null) );\n";
                 code += SalsaCompiler.getIndent() + "\t}\n";
 
                 code += SalsaCompiler.getIndent() + "}\n\n";
@@ -135,7 +135,7 @@ public class BehaviorBody extends SimpleNode {
                                         if (getChild(i).getChild(1).children == null) hasBasic = true;
                                         code += SalsaCompiler.getIndent() + "public Transactor construct (" + getChild(i).getChild(1).getJavaCode() + ") {\n";
                                         code += SalsaCompiler.getIndent() + "\tObject[] __arguments = { " + ((FormalParameters)getChild(i).getChild(1)).getNonPrimitiveNames() + " };\n";
-                                        code += SalsaCompiler.getIndent() + "\tthis.send( new Message(this, this, \"construct\", __arguments, null, null) );\n";
+                                        code += SalsaCompiler.getIndent() + "\tthis.send( new TransactorMessage(this, this, null, \"construct\", __arguments, null, null) );\n";
                                         code += SalsaCompiler.getIndent() + "\treturn this;\n";
                                         code += SalsaCompiler.getIndent() + "}\n\n";
                                 }
@@ -144,7 +144,7 @@ public class BehaviorBody extends SimpleNode {
                 if (!hasBasic) {
                         code += SalsaCompiler.getIndent() + "public Transactor construct() {\n";
                         code += SalsaCompiler.getIndent() + "\tObject[] __arguments = { };\n";
-                        code += SalsaCompiler.getIndent() + "\tthis.send( new Message(this, this, \"construct\", __arguments, null, null) );\n";
+                        code += SalsaCompiler.getIndent() + "\tthis.send( new TransactorMessage(this, this, null, \"construct\", __arguments, null, null) );\n";
                         code += SalsaCompiler.getIndent() + "\treturn this;\n";
                         code += SalsaCompiler.getIndent() + "}\n\n";
                 }
@@ -221,29 +221,36 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 if (!hasBasic) {
                         code += SalsaCompiler.getIndent() + "public void construct() {}\n\n";
                 }
+                code += SalsaCompiler.getIndent() + "public void process(Message message) {\n";
+                code += SalsaCompiler.getIndent() + "\tif(message instanceof TransactorMessage){\n";
+                code += SalsaCompiler.getIndent() + "\t\tprocess((TransactorMessage) message);\n";
+                code += SalsaCompiler.getIndent() + "\t}else{\n";
+                code += SalsaCompiler.getIndent() + "\t\tSystem.err.println(toString() +\" attempting to process a non-transactor-message: \" + message.toString());\n";
+                code += SalsaCompiler.getIndent() + "\t}\n";
+                code += SalsaCompiler.getIndent() + "}\n";
 
                 code += SalsaCompiler.getIndent() + "public void process(TransactorMessage message) {\n";
-
-
-                code += SalsaCompiler.getIndent() + "\tWorldview union = wv.union(message.worldview);\n";
+                code += SalsaCompiler.getIndent() + "\tif(message.getWorldview() != null){\n";
+                code += SalsaCompiler.getIndent() + "\tWorldview union = wv.union(message.getWorldview());\n";
                 code += SalsaCompiler.getIndent() + "\tHashSet current = new HashSet();\n";
                 code += SalsaCompiler.getIndent() + "\tcurrent.add(name);\n";
                 code += SalsaCompiler.getIndent() + "\tif (union.invalidates(wv.getHistMap(),current)){\n";
                 code += SalsaCompiler.getIndent() + "\t\tif(wv.getHistMap().get(name).isPersistent()){\n";
-                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.worldview, message.getMethodName(), message.getArguments(), null, null, false );\n";
+                code += SalsaCompiler.getIndent() + "\t\t\tTransactorMessage pass_msg = new TransactorMessage( self, self, message.getWorldview(), message.getMethodName(), message.getArguments(), null, null, false );\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tself.send(pass_msg);\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tthis.rollback(true);\n";
                 code += SalsaCompiler.getIndent() + "\t\t}else{\n";
                 code += SalsaCompiler.getIndent() + "\t\t\tthis.destroy();\n";
                 code += SalsaCompiler.getIndent() + "\t\t};\n";
                 code += SalsaCompiler.getIndent() + "\t\treturn;\n";
-                code += SalsaCompiler.getIndent() + "\t}else if (union.invalidates(message.msg_wv.getHistMap(), message.msg_wv.getRootSet())) {\n";
+                code += SalsaCompiler.getIndent() + "\t}else if (union.invalidates(message.getWorldview().getHistMap(), message.getWorldview().getRootSet())) {\n";
                 code += SalsaCompiler.getIndent() + "\t\tresponseAck(message);\n";
                 code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
                 code += SalsaCompiler.getIndent() + "\t\twv.setRootSet(new HashSet());\n";
                 code += SalsaCompiler.getIndent() + "\t\treturn;";
                 code += SalsaCompiler.getIndent() + "\t}else{\n";
                 code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
+                code += SalsaCompiler.getIndent() + "\t}\n";
                 code += SalsaCompiler.getIndent() + "\t}\n";
 
                 code += SalsaCompiler.getIndent() + "\tMethod[] matches = getMatches(message.getMethodName());\n";
@@ -361,8 +368,8 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() + "\t\t//preAct() for local actor creation\n";
                 code += SalsaCompiler.getIndent() + "\t\t//act() for remote actor creation\n";
 
-                code += SalsaCompiler.getIndent() + "\t\tif (ual != null && !ual.getLocation().equals(ServiceFactory.getTheater().getLocation())) {instance.send( new Message(instanceRef, instanceRef, \"act\", _arguments, false) );}\n";
-                code += SalsaCompiler.getIndent() + "\t\telse {instance.send( new Message(instanceRef, instanceRef, \"preAct\", _arguments, false) );}\n";
+                code += SalsaCompiler.getIndent() + "\t\tif (ual != null && !ual.getLocation().equals(ServiceFactory.getTheater().getLocation())) {instance.send( new TransactorMessage(instanceRef, instanceRef, null, \"act\", _arguments, false) );}\n";
+                code += SalsaCompiler.getIndent() + "\t\telse {instance.send( new TransactorMessage(instanceRef, instanceRef, null, \"act\", _arguments, false) );}\n";
 		code += SalsaCompiler.getIndent() + "\t}\n";
                 code += SalsaCompiler.getIndent() + "\tRunTime.finishedProcessingMessage();\n";
 		code += SalsaCompiler.getIndent() + "}\n\n";
@@ -486,7 +493,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 					if (getChild(i).getChild(1).children == null) hasBasic = true;
 					code += SalsaCompiler.getIndent() + "public Transactor construct (" + getChild(i).getChild(1).getJavaCode() + ") {\n";
 					code += SalsaCompiler.getIndent() + "\tObject[] __arguments = { " + ((FormalParameters)getChild(i).getChild(1)).getNonPrimitiveNames() + " };\n";
-					code += SalsaCompiler.getIndent() + "\tthis.send( new Message(this, this, \"construct\", __arguments, null, null) );\n";
+					code += SalsaCompiler.getIndent() + "\tthis.send( new TransactorMessage(this, this,null, \"construct\", __arguments, null, null) );\n";
 					code += SalsaCompiler.getIndent() + "\treturn this;\n";
 					code += SalsaCompiler.getIndent() + "}\n\n";
 				}
@@ -495,7 +502,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 		if (!hasBasic) {
 			code += SalsaCompiler.getIndent() + "public Transactor construct() {\n";
 			code += SalsaCompiler.getIndent() + "\tObject[] __arguments = { };\n";
-			code += SalsaCompiler.getIndent() + "\tthis.send( new Message(this, this, \"construct\", __arguments, null, null) );\n";
+			code += SalsaCompiler.getIndent() + "\tthis.send( new TransactorMessage(this, this, null, \"construct\", __arguments, null, null) );\n";
 			code += SalsaCompiler.getIndent() + "\treturn this;\n";
 			code += SalsaCompiler.getIndent() + "}\n\n";
 		}
@@ -532,10 +539,9 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                       "public void preAct(String[] arguments) {\n";
                   code += SalsaCompiler.getIndent() +
                       "\tgetActorMemory().getInverseList().removeInverseReference(\"rmsp://me\",1);\n";
-                  //code += SalsaCompiler.getIndent() + "\tact(arguments);\n";
                   code += SalsaCompiler.getIndent() + "\t{\n";
                   code += SalsaCompiler.getIndent() + "\t\tObject[] __args={arguments};\n";
-                  code += SalsaCompiler.getIndent() + "\t\tself.send( new Message(self,self, \"act\", __args, null,null,false) );\n";
+                  code += SalsaCompiler.getIndent() + "\t\tself.send( new TransactorMessage(self,self,null, \"act\", __args, null,null,false) );\n";
                   code += SalsaCompiler.getIndent() + "\t}\n";
                   code += SalsaCompiler.getIndent() + "}\n\n";
                 }
@@ -559,9 +565,18 @@ code += SalsaCompiler.getIndent() + "}\n\n";
 			code += SalsaCompiler.getIndent() + "public void construct() {}\n\n";
 		}
 
+               code += SalsaCompiler.getIndent() + "public void process(Message message) {\n";
+               code += SalsaCompiler.getIndent() + "\tif(message instanceof TransactorMessage){\n";
+               code += SalsaCompiler.getIndent() + "\t\tprocess((TransactorMessage) message);\n";
+               code += SalsaCompiler.getIndent() + "\t}else{\n";
+               code += SalsaCompiler.getIndent() + "\t\tSystem.err.println(toString() +\" attempting to process a non-transactor-message: \" + message.toString());\n";
+               code += SalsaCompiler.getIndent() + "\t}\n";
+               code += SalsaCompiler.getIndent() + "}\n";
+
+
                code += SalsaCompiler.getIndent() + "public void process(TransactorMessage message) {\n";
 
-
+                code += SalsaCompiler.getIndent() + "\tif(message.getWorldview() != null){\n";
                 code += SalsaCompiler.getIndent() + "\tWorldview union = wv.union(message.getWorldview());\n";
                 code += SalsaCompiler.getIndent() + "\tHashSet current = new HashSet();\n";
                 code += SalsaCompiler.getIndent() + "\tcurrent.add(name);\n";
@@ -581,6 +596,7 @@ code += SalsaCompiler.getIndent() + "}\n\n";
                 code += SalsaCompiler.getIndent() + "\t\treturn;";
                 code += SalsaCompiler.getIndent() + "\t}else{\n";
                 code += SalsaCompiler.getIndent() + "\t\twv = union;\n";
+                code += SalsaCompiler.getIndent() + "\t}\n";
                 code += SalsaCompiler.getIndent() + "\t}\n";
 		code += SalsaCompiler.getIndent() + "\tMethod[] matches = getMatches(message.getMethodName());\n";
 		code += SalsaCompiler.getIndent() + "\tObject returnValue = null;\n";

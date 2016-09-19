@@ -14,6 +14,6 @@ public class StabilizeStatement extends SimpleNode {
 	public StabilizeStatement(SalsaParser p, int id)	{ super(p, id); }
 
 	public String getJavaCode() {
-		return SalsaCompiler.getIndent() + "this.stabilize();";
+		return SalsaCompiler.getIndent() + "this.stabilize();\n";
 	}
 }

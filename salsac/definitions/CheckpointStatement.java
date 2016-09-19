@@ -14,6 +14,6 @@ public class CheckpointStatement extends SimpleNode {
 	public CheckpointStatement(SalsaParser p, int id)	{ super(p, id); }
 
 	public String getJavaCode() {
-		return SalsaCompiler.getIndent() + "this.checkpoint();";
+		return SalsaCompiler.getIndent() + "this.checkpoint();\n";
 	}
 }
