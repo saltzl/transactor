@@ -285,6 +285,8 @@ TOKEN : {
 	| < SEMICOLON: ";" >
 	| < COMMA: "," >
 	| < DOT: "." >
+	| < DOTGET: ".?" >
+	| < DOTSET: ".!" >
 	| < MSG: "<-" >
 	| < CONT: "@" >
 	| < TOKENNAMING: "->" >
@@ -450,15 +452,26 @@ void AssignmentOperator() : {} {
 }
 
 void Expression() : {} {
-	Value() (((Operator() | AssignmentOperator()) Value()) | ("?" Expression() ":" Value()) )*
+    Value() (((Operator() | AssignmentOperator()) Value()) | ("?" Expression() ":" Value()) )*
 }
 
 void Operator() : {} {
 	"||" | "&&" | "|" | "^" | "&" | "==" | "!=" | ">" | "<" | "<=" | ">=" | "<<" | ">>" | ">>>" | "+" | "-" | "*" | "/" | "%" | "instanceof"
 }
 
+void TransGet() : {} {
+	"this" <DOTGET> <IDENTIFIER> (PrimarySuffix())*
+}
+
+void TransSet() : {} {
+	"this" <DOTSET> <IDENTIFIER> (PrimarySuffix())*
+}
+
 void Value() : {} {
-	[Prefix()] Variable() [Suffix()] (PrimarySuffix())*
+	   LOOKAHEAD( "this" <DOTGET> ) TransGet()
+	|  LOOKAHEAD( "this" <DOTSET> ) TransSet()
+	|  [Prefix()] Variable() [Suffix()] (PrimarySuffix())*
+	| "dependent"
 }
 
 void Prefix() : {} {
@@ -475,7 +488,6 @@ void Variable() : {} {
 		  Literal()
 		| Name() 
 		| "this" 
-		| "dependent"
 		| "super"
 		| AllocationExpression()
 		| "(" Expression() ")"
@@ -619,8 +631,13 @@ void EmptyStatement() : {} {
 	";"
 }
 
+void TSetAssignment() : {} {
+	"this" <DOTSET> <IDENTIFIER> "=" Value()
+}
+
 void StatementExpression() : {} {
-	Value() [AssignmentOperator() Expression()]
+ 	LOOKAHEAD(3) TSetAssignment()
+	| Value() [AssignmentOperator() Expression()]
 }
 
 void LabeledStatement() : {} {

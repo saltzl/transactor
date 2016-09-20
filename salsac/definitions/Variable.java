@@ -53,10 +53,8 @@ public class Variable extends SimpleNode {
                           return code;
                         }
 		} else {
-			if (getToken(0).image.equals("dependent")) return "this.isDependent()";
 			code = getToken(0).image;
 		}
-
 		return code;
 	}
 

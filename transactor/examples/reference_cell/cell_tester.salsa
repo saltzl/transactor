@@ -10,18 +10,16 @@ behavior cell_tester {
     private cell test_cell;
 
     public cell_tester() {
-        super(self);
-        this.setTState("test_cell", new cell(0));
+        this.!test_cell = new cell(0);
         stabilize;
         checkpoint;
-        return;
     }
 
     // Unreliable cell
     public void testCell() {
-        (cell)this.getTState("test_cell") <- get(this.self());
-        (cell)this.getTState("test_cell") <- set(5);
-        (cell)this.getTState("test_cell") <- get(this.self());
+        this.?test_cell <- get(self);
+        this.?test_cell <- set(5);
+        this.?test_cell <- get(self);
     }
  
     public void data(int contents) {
@@ -29,7 +27,6 @@ behavior cell_tester {
     }
 
     void act(String[] args) {
-        Object[] params = { this.self() };
-        this.self() <- testCell();
+        self <- testCell();
     }
 }

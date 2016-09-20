@@ -324,7 +324,7 @@ public class Transactor extends UniversalActor  {
         }
 
         // TODO: Handle exceptions
-		public boolean setTState(String field, Object newValue) {
+		public Object setTState(String field, Object value) {
             Field myField;
 
 			if (!wv.getHistMap().get(name).isStable()) {
@@ -332,22 +332,22 @@ public class Transactor extends UniversalActor  {
                 try {
                     myField = this.getClass().getDeclaredField(field);
                     myField.setAccessible(true);
-                    myField.set(this, newValue);
+                    myField.set(this, value);
                 } catch (NoSuchFieldException e) {
                     try {
                         myField = this.getClass().getField(field);
                         myField.setAccessible(true);
-                        myField.set(this, newValue);
+                        myField.set(this, value);
                     } catch (NoSuchFieldException f) { 
                         System.out.println("[SETSTATE] no such field exception: " + field);
-                        return false; 
+                        return null; 
                     } catch (IllegalAccessException g) { 
                         System.out.println("[SETSTATE] illegal access exception 1");
-                        return false; 
+                        return null; 
                     }
                 } catch (IllegalAccessException g) { 
                     System.out.println("[SETSTATE] illegal access exception 2");
-                    return false; 
+                    return null;  
                 }
 
 				if (!wv.getDepGraph().containsKey(name)) {
@@ -357,12 +357,51 @@ public class Transactor extends UniversalActor  {
 				while (i.hasNext()) {
 					wv.getDepGraph().get(name).add((String)i.next());
 				}
-				return true;
+				return value;
 			}
             /*** [set2] ***/
-			return false;
+			return null;
 		}
         
+        public Object getMutTState(String field) {
+            Field myField;
+
+            if (!wv.getHistMap().get(name).isStable()) {
+                /*** [set1] ***/
+                Object value;
+                try {
+                    myField = this.getClass().getDeclaredField(field);
+                    myField.setAccessible(true);
+                    value = myField.get(this);
+                } catch (NoSuchFieldException e) {
+                    try {
+                        myField = this.getClass().getField(field);
+                        myField.setAccessible(true);
+                        value = myField.get(this);
+                    } catch (NoSuchFieldException f) { 
+                        System.out.println("[SETSTATE] no such field exception: " + field);
+                        return null; 
+                    } catch (IllegalAccessException g) { 
+                        System.out.println("[SETSTATE] illegal access exception 1");
+                        return null; 
+                    }
+                } catch (IllegalAccessException g) { 
+                    System.out.println("[SETSTATE] illegal access exception 2");
+                    return null;  
+                }
+
+                if (!wv.getDepGraph().containsKey(name)) {
+                    wv.getDepGraph().put(name, new HashSet());
+                }
+                Iterator i = wv.getRootSet().iterator();
+                while (i.hasNext()) {
+                    wv.getDepGraph().get(name).add((String)i.next());
+                }
+                return value;
+            }
+            /*** [set2] ***/
+            return null;
+        }
         /*
          * Need to handle member variable retrieval 
          */
@@ -392,6 +431,29 @@ public class Transactor extends UniversalActor  {
                 System.out.println(g);
                 return null; 
             }
+            byte[] serializedField;
+
+            try {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream outStream = new ObjectOutputStream( bos);
+                outStream.writeObject(value);
+                outStream.flush();
+                serializedField = bos.toByteArray();
+                outStream.close();
+                bos.close();
+
+            }
+            catch (Exception e) {System.err.println("Error on serializing getTState"+e); return null;}
+
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream(serializedField);
+                ObjectInputStream inStream;
+                inStream = new ObjectInputStream(bis);
+                value = (Object) inStream.readObject();
+                inStream.close();
+                bis.close();
+            }
+            catch (Exception e) {System.err.println("Error on deserializing getTState"+e); return null;} 
 
 			wv.getRootSet().add(name);
             return value;

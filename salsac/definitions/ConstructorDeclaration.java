@@ -66,6 +66,8 @@ public class ConstructorDeclaration extends SimpleNode {
 			if (getChild(i) instanceof ExplicitConstructorInvocation) {
 				code += getChild(i).getJavaCode();
 				i++;
+			}else{
+				code += SalsaCompiler.getIndent() +"super.construct(self);\n";
 			}
 		}
 

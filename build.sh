@@ -34,7 +34,7 @@ echo ""
 
 echo "Compiling Transactor Package"
 echo "java source..."
-javac -Xlint:none -d $DIST `find transactor/ | grep "java$"`
+javac -Xlint:none -d $DIST `find transactor/language/ transactor/resources/ | grep "java$"`
 echo ""
 echo "Generating jar file..."
 cd $DIST
