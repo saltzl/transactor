@@ -1,0 +1,45 @@
+module transactor.examples.banktransfer_nocds;
+
+import transactor.language.*;
+import java.util.*;
+
+behavior teller extends Transactor {
+
+    private int acks = 0;
+    private Transactor inacct;
+    private Transactor outacct;
+
+    public teller(Transactor inacct, Transactor outacct) {
+        this.!inacct = inacct;
+        this.!outacct = outacct;
+        stabilize;
+        checkpoint;
+    }
+
+    public void transfer(int delta) {
+        inacct <- adj(delta, self);
+        outacct <- adj(-1*delta, self);
+    }
+
+    public void done(String msg) {
+        standardOutput<-println(msg);
+        this.!acks = this.?acks + 1; // Setting ack
+        standardOutput<-println(acks);
+        if (this.?acks == 2){
+            stabilize;
+            this.?inacct <- pingreq(this.?outacct); 
+            this.?outacct <- pingreq(this.?inacct);
+            this.?inacct <- pingreq(self);
+            this.?outacct <- pingreq(self);
+        }
+    }
+
+    public void ping() {
+        checkpoint;
+    }
+
+    public void printData() {
+        System.out.println("Acks: " + acks);
+        System.out.println(this.getString());
+    }   
+}

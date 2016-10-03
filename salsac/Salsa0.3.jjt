@@ -452,7 +452,8 @@ void AssignmentOperator() : {} {
 }
 
 void Expression() : {} {
-    Value() (((Operator() | AssignmentOperator()) Value()) | ("?" Expression() ":" Value()) )*
+      Value() (((Operator() | AssignmentOperator()) Value()) | ("?" Expression() ":" Value()) )*
+    | "dependent"
 }
 
 void Operator() : {} {
@@ -471,7 +472,6 @@ void Value() : {} {
 	   LOOKAHEAD( "this" <DOTGET> ) TransGet()
 	|  LOOKAHEAD( "this" <DOTSET> ) TransSet()
 	|  [Prefix()] Variable() [Suffix()] (PrimarySuffix())*
-	| "dependent"
 }
 
 void Prefix() : {} {
@@ -483,7 +483,7 @@ void Suffix() : {} {
 }
 
 void Variable() : {} {
-	[LOOKAHEAD( "(" Type() ")" (Literal() | Name() | "this" | "super" | "dependent" | AllocationExpression() | "(" Expression() ")")) "(" Type() ")"] 
+	[LOOKAHEAD( "(" Type() ")" (Literal() | Name() | "this" | "super" | AllocationExpression() | "(" Expression() ")")) "(" Type() ")"] 
 	(
 		  Literal()
 		| Name() 
@@ -632,7 +632,7 @@ void EmptyStatement() : {} {
 }
 
 void TSetAssignment() : {} {
-	"this" <DOTSET> <IDENTIFIER> "=" Value()
+	"this" <DOTSET> <IDENTIFIER> "=" Expression()
 }
 
 void StatementExpression() : {} {

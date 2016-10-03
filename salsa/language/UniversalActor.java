@@ -825,7 +825,7 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 			currentMessage = getMessage();
 			if (currentMessage==null) {continue;}
 
-			System.out.println("process:" + this.getIdentifier() + ", m=" + currentMessage.getMethodName());
+			//System.out.println("process:" + this.getIdentifier() + ", m=" + currentMessage.getMethodName());
 			process(currentMessage);
 			if (!currentMessage.getMethodName().equals("die") ) {
 				RunTime.finishedProcessingMessage();
@@ -896,7 +896,7 @@ public class UniversalActor implements ActorReference, java.io.Serializable {
 				RunTime.receivedMessage();
 				new Thread(delayThread, "Delay Thread").start();
 			} else {
-//System.out.println("sending:" + this.getIdentifier() + ", target=" + current.getTarget());
+				//System.out.println("sending:" + this.getIdentifier() + ", target=" + current.getTarget());
 				target.send( current );
 			}
 		}

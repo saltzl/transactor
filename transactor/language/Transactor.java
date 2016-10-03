@@ -259,7 +259,7 @@ public class Transactor extends UniversalActor  {
 			if (!wv.getHistMap().get(name).isStable()||force) {
                 /*** [rol2] ***/
 				if (wv.getHistMap().get(name).isPersistent()) {
-                    //System.out.println(self + ": rolling back...........");
+                    System.out.println(self + ": rolling back...........");
                    
                     // We need to send out previous messages first to carry on current worldview before a rollback
                     //sendGeneratedMessages(); // End message instead and let process send them, msg init takes care of wv snapshot
@@ -276,7 +276,8 @@ public class Transactor extends UniversalActor  {
 					HashMap new_histMap = new HashMap();
 					new_histMap.put(name, wv.getHistMap().get(name));
 					Worldview new_wv = new Worldview();
-					new_wv.setHistMap(new_histMap);
+					new_wv.setHistMap(new_histMap);                    
+
 
                     Transactor.State savedState = null;
 
@@ -326,7 +327,6 @@ public class Transactor extends UniversalActor  {
         // TODO: Handle exceptions
 		public Object setTState(String field, Object value) {
             Field myField;
-
 			if (!wv.getHistMap().get(name).isStable()) {
                 /*** [set1] ***/
                 try {
@@ -355,7 +355,8 @@ public class Transactor extends UniversalActor  {
 				}
 				Iterator i = wv.getRootSet().iterator();
 				while (i.hasNext()) {
-					wv.getDepGraph().get(name).add((String)i.next());
+                    String toAdd = (String)i.next();
+					wv.getDepGraph().get(name).add(toAdd);
 				}
 				return value;
 			}

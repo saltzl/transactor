@@ -8,12 +8,11 @@ import java.util.*;
 behavior CDSUpdateDirector extends Transactor {
 
     public CDSUpdateDirector(){
-        super(self);
     }
 
     public void startCDSUpdate(Object[] CDSUpdate){
-        this.stabilize();
-        PingDirector director = (PingDirector)this.newTActor(new PingDirector());
-        this.sendMsg("pingStart", CDSUpdate, director);
+        stabilize;
+        PingDirector director = new PingDirector();
+        director <- pingStart(CDSUpdate);
     }
 }

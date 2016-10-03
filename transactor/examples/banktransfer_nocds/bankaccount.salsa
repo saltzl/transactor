@@ -1,4 +1,4 @@
-module transactor.examples.bank_transfer_2;
+module transactor.examples.banktransfer_nocds;
 
 import transactor.language.*;
 import java.util.*;
@@ -16,7 +16,7 @@ behavior bankaccount {
     public void adj(int delta, teller atm) {
         this.!bal = this.?bal + delta;
 
-        if (this.!bal < 0){
+        if (this.?bal < 0){
             atm <- done("Not enough funds!");
             rollback;
         }
@@ -26,9 +26,17 @@ behavior bankaccount {
         }
     }
 
+    public void pingreq(Transactor requester){
+        requester <- ping();
+    }
+
+    public void ping(){ //may cause rollback
+        checkpoint;
+    }
+
+
     public void printData() {
         System.out.println("Balance: " + this.?bal);
-        System.out.println(this.getString());
     }
 }
         

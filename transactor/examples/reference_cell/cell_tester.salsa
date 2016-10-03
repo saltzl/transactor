@@ -7,10 +7,10 @@ import java.util.*;
 behavior cell_tester {
    
     private int acks = 0;
-    private cell test_cell;
+    private prcell test_cell;
 
     public cell_tester() {
-        this.!test_cell = new cell(0);
+        this.!test_cell = new prcell(0);
         stabilize;
         checkpoint;
     }
@@ -18,6 +18,10 @@ behavior cell_tester {
     // Unreliable cell
     public void testCell() {
         this.?test_cell <- get(self);
+        this.?test_cell <- set(5);
+        this.?test_cell <- get(self);
+
+        stabilize;
         this.?test_cell <- set(5);
         this.?test_cell <- get(self);
     }

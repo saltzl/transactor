@@ -9,12 +9,11 @@ behavior transfer {
     private bankaccount check;
     private teller banker;
 
-    public transfer(){
-        super(self);
-    }
+    public transfer(){}
+
 
     public void fund() {
-        Transactor[] participants = {((Transactor)this.getTState("save")), ((Transactor)this.getTState("check")), ((Transactor)this.getTState("banker"))};
+        Transactor[] participants = { this.?save, this.?check, this.?banker };
         Object[] transferInfo = {500, ((bankaccount)this.getTState("save")), ((bankaccount)this.getTState("check"))};
         this.stabilize();
         this.startCDSUpdate(participants, ((teller)this.getTState("banker")), "transfer", transferInfo);

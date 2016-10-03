@@ -61,7 +61,6 @@ public class ConstructorDeclaration extends SimpleNode {
 
 	public String getChildCode() {
 		String code = "";
-
 		if (i < children.length) {
 			if (getChild(i) instanceof ExplicitConstructorInvocation) {
 				code += getChild(i).getJavaCode();
@@ -69,6 +68,8 @@ public class ConstructorDeclaration extends SimpleNode {
 			}else{
 				code += SalsaCompiler.getIndent() +"super.construct(self);\n";
 			}
+		}else{
+			code += SalsaCompiler.getIndent() +"super.construct(self);\n";
 		}
 
 		for (; i < children.length; i++) {

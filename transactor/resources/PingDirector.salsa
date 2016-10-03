@@ -9,14 +9,13 @@ behavior PingDirector extends Transactor {
 
     private Transactor[] participants;
 
-    public PingDirector() {
-        super(self);
-    }
+    public PingDirector() { }
 
     public void pingStart(Transactor[] participants, Transactor coordinator, String msg, Object[] msg_args) {
-        this.setTState("participants", participants);
-        Object[] CDSUpdate = {msg, msg_args, this.self()};
-        this.sendMsg("CDSUpdateStart", CDSUpdate, coordinator);
+
+        this.!participants = participants;
+        coordinator <- CDSUpdateStart(msg, msg_args, self);
+        self <- ping();
         this.sendMsg("ping", new Object[0], this.self());
     }
 

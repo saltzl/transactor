@@ -1,7 +1,7 @@
 /*
 	Code generation for the following grammar segment:
 
-	Value := [Prefix] Variable [Suffix] (PrimarySuffix)* | "dependent" | TransGet | TransSet
+	Value := [Prefix] Variable [Suffix] (PrimarySuffix)* | TransGet | TransSet
 */
 
 
@@ -15,9 +15,6 @@ public class Value extends SimpleNode {
 	public Value(SalsaParser p, int id)	{ super(p, id); }
 
 	public String getType() {
-		try{
-		   if (tokens.length > 0 && getToken(0).image.equals("dependent")) return "boolean";
-		} catch (NullPointerException e) {}
 
 		if (getChild(0) instanceof Prefix) return ((Variable)getChild(1)).getType();
 		else if (getChild(0) instanceof TransGet) return ((TransGet)getChild(0)).getType();
@@ -26,9 +23,6 @@ public class Value extends SimpleNode {
 	}
 
 	public boolean isToken() {
-		try{
-			if (getToken(0).image.equals("dependent")) return false;
-		} catch (NullPointerException e) {}
 		int variablePosition = 0;
 		if (getChild(0) instanceof Prefix) variablePosition = 1;
 
@@ -42,9 +36,6 @@ public class Value extends SimpleNode {
 
 	public String getJavaCode() {
 		String code = "";
-		try{
-			if (getToken(0).image.equals("dependent")) return "this.isDependent()";
-		} catch (NullPointerException e) {}
 		for (int i = 0; i < children.length; i++) {
 			String childCode = getChild(i).getJavaCode();
             if (childCode.equals("self")) {

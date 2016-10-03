@@ -20,7 +20,7 @@ public class TransSet extends SimpleNode {
 
 	public String getJavaCode() {
 		String code = "";
-		code += "this.getMutTState(\"" + getToken(2).image + "\")";
+		code += "(("+this.getType() + ")this.getMutTState(\"" + getToken(2).image + "\"))";
 		
 		if(children == null) return code;
 		for(int i = 0; i < children.length; ++i){

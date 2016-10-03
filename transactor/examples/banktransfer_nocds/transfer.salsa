@@ -1,0 +1,34 @@
+module transactor.examples.banktransfer_nocds;
+
+import transactor.language.*;
+import java.util.*;
+
+behavior transfer {
+
+    private bankaccount save;
+    private bankaccount check;
+    private teller banker;
+
+    public transfer(){
+
+    }
+    public void act(String[] args) {
+        this.!save = new bankaccount(100);
+        this.!check = new bankaccount(100);
+        this.!banker = new teller(save,check);
+
+        standardOutput<-println("SAVINGS ACCOUNT: ") @
+            save<-printData() @
+        standardOutput<-println("CHECKING ACCOUNT: ") @
+            check<-printData() @
+        banker<-transfer(50) @
+        // wait for transactions to complete
+        standardOutput<-println("===================================="):delay(new Integer(5000)) @
+        standardOutput<-println("SAVINGS ACCOUNT: ") @
+            save<-printData() @
+            standardOutput<-println() @
+        standardOutput<-println("CHECKING ACCOUNT: ") @
+            check<-printData() @
+            standardOutput<-println();
+    }
+}

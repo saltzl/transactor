@@ -320,7 +320,6 @@ public class WWCSystem extends UniversalActor implements SystemService {
 
         public void reloadTransactor(Object actorState, Worldview new_wv, Vector new_mailbox, Hashtable new_pendingMessages, Vector new_unresolvedTokens, ActorMemory new_stateMemory) {
                   Transactor.State actor = ((Transactor.State) actorState);
-                  
                   actor.setWV(new_wv);
                   actor.mailbox = new_mailbox;
                   actor.pendingMessages = new_pendingMessages;

@@ -26,6 +26,9 @@ public class Expression extends SimpleNode {
 	public Expression(SalsaParser p, int id)	{ super(p, id); }
 
 	public boolean hasOperations() {
+		try{
+			if (getToken(0).image.equals("dependent")) return false;
+		} catch (NullPointerException e) {}
 		if (children.length > 1) return true;
 		else {
 			Value value = (Value)getChild(0);
@@ -35,10 +38,16 @@ public class Expression extends SimpleNode {
 	}
 
 	public String getType() {
+		try{
+			if (getToken(0).image.equals("dependent")) return "boolean";
+		} catch (NullPointerException e) {}
 		return ((Value)getChild(0)).getType();
 	}
 
 	public boolean hasToken() {
+		try{
+			if (getToken(0).image.equals("dependent")) return false;
+		} catch (NullPointerException e) {}
 		boolean hasToken = false;
 		for (int i = 0; i < children.length; i += 2) {
 			hasToken = hasToken || ((Value)getChild(i)).isToken();
@@ -47,6 +56,9 @@ public class Expression extends SimpleNode {
 	}
 
 	public int getExpressionLine() {
+		try{
+			if (getToken(0).image.equals("dependent")) return getToken(0).beginLine;
+		} catch (NullPointerException e) {}
 		if (children.length > 1) return getChild(1).getToken(0).beginLine;
 		else {
 			Value value = (Value)getChild(0);
@@ -61,6 +73,9 @@ public class Expression extends SimpleNode {
 	public String getJavaCode() {
 		//Attempt to see if the user tried to use a token inside an expression,
 		//which is illegal SALSA code.  if so generate an error.
+		try{
+			if (getToken(0).image.equals("dependent")) return "this.isDependent()";
+		} catch (NullPointerException e) {}
 		if (hasOperations() && hasToken()) {
 			System.err.println("Salsa Compiler Error: Line " + getExpressionLine());
 			String expcode = getChildCode();

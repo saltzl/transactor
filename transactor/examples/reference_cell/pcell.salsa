@@ -9,29 +9,20 @@ behavior pcell extends Transactor {
     private int contents = 0;
 
     public pcell(int contents) {
-        super(self);
-        this.setTState("contents", contents);
-    }
-
-    public void initialize() {
-        this.stabilize();
-        this.checkpoint(); return;
+        this.!contents = contents;
+        stabilize;
+        checkpoint;
     }
 
     public void set(int val) {
-        this.setTState("contents", val);
-        this.stabilize();
-        this.checkpoint(); return;
+        this.!contents = val;
+        stabilize;
+        checkpoint;
     }
 
     public void get(Transactor customer) {
-        this.stabilize();
-        Object[]args = {((int)this.getTState("contents"))};
-        this.sendMsg("data", args, customer);
-        this.checkpoint(); return;
-    }
-
-    public void pingreq(Transactor source) {
-        this.sendMsg("ping", new Object[0], source);
+        stabilize;
+        customer <- data(this.?contents);
+        checkpoint;
     }
 }

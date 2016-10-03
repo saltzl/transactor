@@ -1,2 +1,3 @@
 *.class
 transactor/examples/*/*.java
+*.fuse*
