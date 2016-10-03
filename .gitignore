@@ -1,3 +1,4 @@
+salsa1.1.5.jar
 *.class
 transactor/examples/*/*.java
 *.fuse*
